@@ -1,36 +1,129 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HBM (Huezo Business Management) - Service Layer
 
-## Getting Started
+A comprehensive order management system designed specifically for garment manufacturing businesses. This Next.js application provides a complete solution for managing customer orders, product specifications, pricing, inventory, and business operations.
 
-First, run the development server:
+## 🚀 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Customer Management**: Complete customer profiles with order history
+- **Order Processing**: End-to-end order lifecycle management
+- **Product Catalog**: Comprehensive product and variation management
+- **Pricing Engine**: Flexible pricing with volume discounts and seasonal adjustments
+- **Inventory Tracking**: Real-time inventory management
+- **User Authentication**: Secure role-based access control
+- **API Integration**: RESTful APIs for external system integration
+
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js 15 with App Router
+- **Language**: TypeScript (strict mode)
+- **Styling**: Tailwind CSS
+- **UI Components**: shadcn/ui + Radix UI
+- **ORM**: Drizzle ORM
+- **Authentication**: NextAuth.js
+- **Validation**: Zod
+- **Database**: PostgreSQL (planned)
+- **Code Quality**: ESLint, Prettier, Husky
+
+## 📋 Prerequisites
+
+- Node.js 18+
+- npm or yarn
+- PostgreSQL database (for production)
+
+## 🔧 Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/gokuzhan/hbm-svc.git
+   cd hbm-svc
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   Edit `.env.local` with your database and authentication settings.
+
+4. **Run the development server**
+
+   ```bash
+   npm run dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 📜 Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run lint:fix` - Fix ESLint issues
+- `npm run format` - Format code with Prettier
+- `npm run type-check` - Run TypeScript type checking
+- `npm run db:generate` - Generate database migrations
+- `npm run db:migrate` - Run database migrations
+- `npm run db:studio` - Open Drizzle Studio
+
+## 🏗️ Project Structure
+
+```
+src/
+├── app/                 # Next.js App Router pages
+├── components/          # React components
+│   └── ui/             # shadcn/ui components
+├── hooks/              # Custom React hooks
+├── lib/                # Utility libraries
+├── types/              # TypeScript type definitions
+└── constants/          # Application constants
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🔒 Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+See `.env.example` for required environment variables:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `DATABASE_URL` - PostgreSQL connection string
+- `NEXTAUTH_SECRET` - NextAuth.js secret key
+- `NEXTAUTH_URL` - Application base URL
 
-## Learn More
+## 🧪 Code Quality
 
-To learn more about Next.js, take a look at the following resources:
+This project enforces code quality through:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **TypeScript**: Strict type checking
+- **ESLint**: Code linting with Next.js and TypeScript rules
+- **Prettier**: Consistent code formatting
+- **Husky**: Pre-commit hooks for automated checks
+- **lint-staged**: Run linting on staged files only
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📚 Development Workflow
 
-## Deploy on Vercel
+1. Create feature branches from `main`
+2. Follow the GitHub issues for development tasks
+3. Ensure all tests pass and code quality checks succeed
+4. Submit pull requests for code review
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🐛 Issue Tracking
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project uses GitHub Issues for task management. Check the [Issues](https://github.com/gokuzhan/hbm-svc/issues) page for current development tasks and bug reports.
+
+## 📄 License
+
+This project is proprietary software. All rights reserved.
+
+## 🤝 Contributing
+
+Please refer to the GitHub issues for current development tasks. Follow the established coding standards and submit pull requests for review.
+
+---
+
+**Note**: This project is currently in active development. Features and documentation are being continuously updated.
