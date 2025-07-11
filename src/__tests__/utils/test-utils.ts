@@ -14,7 +14,7 @@ export const mockUserSession = {
   name: 'Test User',
   email: 'test@example.com',
   role: 'admin',
-  permissions: ['users:read', 'users:create', 'users:update', 'users:delete']
+  permissions: ['users:read', 'users:create', 'users:update', 'users:delete'],
 };
 
 // Mock customer session for tests
@@ -22,7 +22,7 @@ export const mockCustomerSession = {
   id: 'test-customer-id',
   name: 'Test Customer',
   email: 'customer@example.com',
-  company: 'Test Company'
+  company: 'Test Company',
 };
 
 // Helper to create mock repository with database
@@ -41,7 +41,7 @@ export const testData = {
     password: 'hashedPassword123',
     role: 'admin',
     createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01')
+    updatedAt: new Date('2024-01-01'),
   },
   customer: {
     id: 'customer-123',
@@ -50,7 +50,7 @@ export const testData = {
     phone: '+1234567890',
     company: 'ACME Corp',
     createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01')
+    updatedAt: new Date('2024-01-01'),
   },
   product: {
     id: 'product-123',
@@ -59,7 +59,7 @@ export const testData = {
     isVariable: false,
     orderTypeId: 'order-type-123',
     createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01')
+    updatedAt: new Date('2024-01-01'),
   },
   order: {
     id: 'order-123',
@@ -68,7 +68,7 @@ export const testData = {
     orderTypeId: 'order-type-123',
     requestedAt: new Date('2024-01-01'),
     createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01')
+    updatedAt: new Date('2024-01-01'),
   },
   inquiry: {
     id: 'inquiry-123',
@@ -77,8 +77,8 @@ export const testData = {
     message: 'Test inquiry message',
     status: 1,
     createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01')
-  }
+    updatedAt: new Date('2024-01-01'),
+  },
 };
 
 // Mock Drizzle query builder
@@ -92,5 +92,18 @@ export const createMockQuery = () => ({
   limit: jest.fn().mockReturnThis(),
   offset: jest.fn().mockReturnThis(),
   execute: jest.fn(),
-  then: jest.fn()
+  then: jest.fn(),
+});
+
+// Simple test to satisfy Jest requirement
+describe('Test Utils', () => {
+  it('should export mock user session', () => {
+    expect(mockUserSession).toBeDefined();
+    expect(mockUserSession.id).toBe('test-user-id');
+  });
+
+  it('should export mock customer session', () => {
+    expect(mockCustomerSession).toBeDefined();
+    expect(mockCustomerSession.id).toBe('test-customer-id');
+  });
 });

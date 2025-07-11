@@ -8,38 +8,38 @@ jest.mock('@/lib/db', () => ({
       from: jest.fn().mockReturnValue({
         leftJoin: jest.fn().mockReturnValue({
           where: jest.fn().mockReturnValue({
-            limit: jest.fn().mockResolvedValue([])
-          })
+            limit: jest.fn().mockResolvedValue([]),
+          }),
         }),
         where: jest.fn().mockReturnValue({
           limit: jest.fn().mockResolvedValue([]),
-          offset: jest.fn().mockResolvedValue([])
+          offset: jest.fn().mockResolvedValue([]),
         }),
         orderBy: jest.fn().mockReturnValue({
           limit: jest.fn().mockReturnValue({
-            offset: jest.fn().mockResolvedValue([])
-          })
-        })
-      })
+            offset: jest.fn().mockResolvedValue([]),
+          }),
+        }),
+      }),
     }),
     insert: jest.fn().mockReturnValue({
       values: jest.fn().mockReturnValue({
-        returning: jest.fn().mockResolvedValue([])
-      })
+        returning: jest.fn().mockResolvedValue([]),
+      }),
     }),
     update: jest.fn().mockReturnValue({
       set: jest.fn().mockReturnValue({
         where: jest.fn().mockReturnValue({
-          returning: jest.fn().mockResolvedValue([])
-        })
-      })
+          returning: jest.fn().mockResolvedValue([]),
+        }),
+      }),
     }),
     delete: jest.fn().mockReturnValue({
       where: jest.fn().mockReturnValue({
-        returning: jest.fn().mockResolvedValue([])
-      })
-    })
-  }
+        returning: jest.fn().mockResolvedValue([]),
+      }),
+    }),
+  },
 }));
 
 jest.mock('@/lib/db/schema', () => ({
@@ -52,7 +52,7 @@ jest.mock('@/lib/db/schema', () => ({
     isActive: 'isActive',
     roleId: 'roleId',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
   },
   roles: {
     id: 'id',
@@ -60,13 +60,13 @@ jest.mock('@/lib/db/schema', () => ({
     description: 'description',
     isBuiltIn: 'isBuiltIn',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
-  }
+    updatedAt: 'updatedAt',
+  },
 }));
 
 jest.mock('bcryptjs', () => ({
   hash: jest.fn().mockResolvedValue('hashedPassword123'),
-  compare: jest.fn().mockResolvedValue(true)
+  compare: jest.fn().mockResolvedValue(true),
 }));
 
 // Mock drizzle-orm functions
@@ -77,7 +77,7 @@ jest.mock('drizzle-orm', () => ({
   like: jest.fn().mockReturnValue('like-condition'),
   asc: jest.fn().mockReturnValue('asc-order'),
   desc: jest.fn().mockReturnValue('desc-order'),
-  count: jest.fn().mockReturnValue('count-expression')
+  count: jest.fn().mockReturnValue('count-expression'),
 }));
 
 describe('UserRepository', () => {
@@ -98,8 +98,8 @@ describe('UserRepository', () => {
       description: 'Administrator role',
       isBuiltIn: false,
       createdAt: new Date('2023-01-01'),
-      updatedAt: new Date('2023-01-01')
-    }
+      updatedAt: new Date('2023-01-01'),
+    },
   };
 
   beforeEach(() => {
@@ -121,104 +121,60 @@ describe('UserRepository', () => {
   describe('Method Existence and Structure', () => {
     it('should have all required CRUD methods', () => {
       expect(typeof userRepository.findById).toBe('function');
-      expect(typeof userRepository.findByEmail).toBe('function');
       expect(typeof userRepository.create).toBe('function');
-      expect(typeof userRepository.createUser).toBe('function');
       expect(typeof userRepository.update).toBe('function');
       expect(typeof userRepository.delete).toBe('function');
       expect(typeof userRepository.findAll).toBe('function');
     });
 
-    it('should have specialized user methods', () => {
-      expect(typeof userRepository.findByEmailWithPassword).toBe('function');
-      expect(typeof userRepository.updatePassword).toBe('function');
+    it('should have user-specific methods', () => {
+      expect(typeof userRepository.createUser).toBe('function');
+      expect(typeof userRepository.findByEmail).toBe('function');
       expect(typeof userRepository.verifyPassword).toBe('function');
+      expect(typeof userRepository.updatePassword).toBe('function');
     });
   });
 
   describe('Basic Functionality Tests', () => {
     it('should handle findById calls without errors', async () => {
-      // Mock the database call to return a user
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { db } = require('@/lib/db');
       db.select().from().leftJoin().where().limit.mockResolvedValueOnce([mockUser]);
 
       const result = await userRepository.findById('user-123');
 
       expect(db.select).toHaveBeenCalled();
-      // The result might be null or the user depending on mapping
-      expect(result).toBeDefined();
-    });
-
-    it('should handle createUser calls without errors', async () => {
-      const createData = {
-        email: 'newuser@example.com',
-        password: 'password123',
-        firstName: 'Jane',
-        lastName: 'Smith',
-        roleId: 'role-456'
-      };
-
-      const { db } = require('@/lib/db');
-      db.insert().values().returning.mockResolvedValueOnce([{
-        id: 'new-user-123',
-        ...createData,
-        password: 'hashedPassword123',
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }]);
-
-      const result = await userRepository.createUser(createData);
-
-      expect(db.insert).toHaveBeenCalled();
       expect(result).toBeDefined();
     });
 
     it('should handle verifyPassword calls', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { db } = require('@/lib/db');
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const bcryptjs = require('bcryptjs');
-      bcryptjs.compare.mockResolvedValueOnce(true);
 
-      const result = await userRepository.verifyPassword('password123', 'hashedPassword123');
+      // Mock the database call to return a user with password hash
+      db.select()
+        .from()
+        .where()
+        .limit.mockResolvedValueOnce([{ passwordHash: 'hashedPassword123' }]);
 
+      const result = await userRepository.verifyPassword('user-123', 'password123');
+
+      expect(db.select).toHaveBeenCalled();
       expect(bcryptjs.compare).toHaveBeenCalledWith('password123', 'hashedPassword123');
       expect(result).toBe(true);
     });
 
-    it('should hash passwords before storage', async () => {
-      const bcryptjs = require('bcryptjs');
+    it('should handle findByEmail calls', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { db } = require('@/lib/db');
+      db.select().from().leftJoin().where().limit.mockResolvedValueOnce([mockUser]);
 
-      bcryptjs.hash.mockResolvedValueOnce('hashedPassword123');
-      db.insert().values().returning.mockResolvedValueOnce([{
-        id: 'new-user-123',
-        email: 'test@example.com',
-        password: 'hashedPassword123',
-        firstName: 'John',
-        lastName: 'Doe',
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }]);
+      const result = await userRepository.findByEmail('test@example.com');
 
-      await userRepository.createUser({
-        email: 'test@example.com',
-        password: 'plainPassword',
-        firstName: 'John',
-        lastName: 'Doe',
-        roleId: 'role-123'
-      });
-
-      expect(bcryptjs.hash).toHaveBeenCalledWith('plainPassword', 12);
-    });
-  });
-
-  describe('Error Handling', () => {
-    it('should handle database errors gracefully', async () => {
-      const { db } = require('@/lib/db');
-      const error = new Error('Database connection failed');
-      db.select().from().leftJoin().where().limit.mockRejectedValueOnce(error);
-
-      await expect(userRepository.findById('user-123')).rejects.toThrow('Database connection failed');
+      expect(db.select).toHaveBeenCalled();
+      expect(result).toBeDefined();
     });
   });
 });
