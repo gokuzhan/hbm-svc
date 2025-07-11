@@ -1,3 +1,5 @@
+import { authOptions } from '@/lib/auth/config';
+import { getServerSession, Session } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { logger } from './logger';
@@ -126,6 +128,116 @@ export function withApiHandler<T extends unknown[]>(
 
       return handleApiError(error, request);
     }
+  };
+}
+
+/**
+ * Authentication middleware for staff endpoints
+ */
+export async function withStaffAuth<T extends unknown[]>(
+  handler: (request: NextRequest, session: Session, ...args: T) => Promise<NextResponse>
+) {
+  return withApiHandler(async (request: NextRequest, ...args: T) => {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user) {
+      throw new AuthenticationError('Authentication required');
+    }
+
+    if (session.user.userType !== 'staff') {
+      throw new AuthorizationError('Staff access required');
+    }
+
+    return handler(request, session, ...args);
+  });
+}
+
+/**
+ * Authentication middleware for customer endpoints
+ */
+export async function withCustomerAuth<T extends unknown[]>(
+  handler: (request: NextRequest, session: Session, ...args: T) => Promise<NextResponse>
+) {
+  return withApiHandler(async (request: NextRequest, ...args: T) => {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user) {
+      throw new AuthenticationError('Authentication required');
+    }
+
+    if (session.user.userType !== 'customer') {
+      throw new AuthorizationError('Customer access required');
+    }
+
+    return handler(request, session, ...args);
+  });
+}
+
+/**
+ * Permission-based authorization middleware
+ */
+export function withPermissions(requiredPermissions: string[]) {
+  return function <T extends unknown[]>(
+    handler: (request: NextRequest, session: Session, ...args: T) => Promise<NextResponse>
+  ) {
+    return withStaffAuth(async (request: NextRequest, session: Session, ...args: T) => {
+      const userPermissions = session.user.permissions || [];
+
+      // Check if user has all required permissions
+      const hasPermission = requiredPermissions.every((permission) =>
+        userPermissions.includes(permission)
+      );
+
+      if (!hasPermission) {
+        throw new AuthorizationError(
+          `Insufficient permissions. Required: ${requiredPermissions.join(', ')}`
+        );
+      }
+
+      return handler(request, session, ...args);
+    });
+  };
+}
+
+/**
+ * Role-based authorization middleware
+ */
+export function withRole(allowedRoles: string[]) {
+  return function <T extends unknown[]>(
+    handler: (request: NextRequest, session: Session, ...args: T) => Promise<NextResponse>
+  ) {
+    return withStaffAuth(async (request: NextRequest, session: Session, ...args: T) => {
+      const userRole = session.user.role;
+
+      if (!userRole || !allowedRoles.includes(userRole)) {
+        throw new AuthorizationError(`Insufficient role. Required: ${allowedRoles.join(' or ')}`);
+      }
+
+      return handler(request, session, ...args);
+    });
+  };
+}
+
+/**
+ * Customer resource access control
+ * Ensures customers can only access their own resources
+ */
+export function withCustomerResourceAccess<T extends unknown[]>(
+  getResourceOwnerId: (args: T) => string
+) {
+  return function (
+    handler: (request: NextRequest, session: Session, ...args: T) => Promise<NextResponse>
+  ) {
+    return withCustomerAuth(async (request: NextRequest, session: Session, ...args: T) => {
+      const resourceOwnerId = getResourceOwnerId(args);
+      const customerId = session.user.id;
+
+      if (resourceOwnerId !== customerId) {
+        throw new AuthorizationError('Access denied to this resource');
+      }
+
+      return handler(request, session, ...args);
+    });
   };
 }
 
