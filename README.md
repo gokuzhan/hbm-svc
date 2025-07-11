@@ -4,13 +4,25 @@ A comprehensive order management system designed specifically for garment manufa
 
 ## 🚀 Features
 
+### ✅ Core API Infrastructure (COMPLETED)
+
+- **Standardized API Responses**: Consistent JSON format across all endpoints
+- **Input Validation**: Zod-based schema validation with detailed error messages
+- **Global Error Handling**: Comprehensive error handling with request tracking
+- **Rate Limiting**: Configurable rate limiting protection
+- **Structured Logging**: Winston-based logging for monitoring and debugging
+- **Health Monitoring**: Service and database health check endpoints
+- **Interactive Documentation**: OpenAPI 3.0 specification with web interface
+- **Type Safety**: Fully typed TypeScript implementation
+
+### 🔄 Business Features (PLANNED)
+
 - **Customer Management**: Complete customer profiles with order history
 - **Order Processing**: End-to-end order lifecycle management
 - **Product Catalog**: Comprehensive product and variation management
 - **Pricing Engine**: Flexible pricing with volume discounts and seasonal adjustments
 - **Inventory Tracking**: Real-time inventory management
 - **User Authentication**: Secure role-based access control
-- **API Integration**: RESTful APIs for external system integration
 
 ## 🛠️ Tech Stack
 
@@ -123,6 +135,47 @@ This project is proprietary software. All rights reserved.
 ## 🤝 Contributing
 
 Please refer to the GitHub issues for current development tasks. Follow the established coding standards and submit pull requests for review.
+
+## 📖 Documentation
+
+- **[Database Setup](./docs/DATABASE.md)** - Database connection, migrations, and schema management
+- **[Development Guide](./docs/DEVELOPMENT.md)** - Development environment setup and tooling
+- **[API Infrastructure](./docs/API_INFRASTRUCTURE.md)** - Guide to using the API infrastructure components
+- **[API Status Report](./docs/API_STATUS.md)** - Current API implementation status and testing results
+- **[API Documentation](http://localhost:3000/api/docs)** - Interactive API documentation (when running locally)
+
+## 🚀 Available API Endpoints
+
+When the development server is running, you can access:
+
+- **Health Checks**:
+  - `GET /api/health` - General service health check
+  - `GET /api/health/db` - Database connectivity check
+
+- **Users API** (Example endpoints):
+  - `GET /api/users` - List users with pagination and search
+  - `POST /api/users` - Create a new user
+  - `GET /api/users/{id}` - Get a specific user by ID
+
+- **Documentation**:
+  - `GET /api/docs` - Interactive API documentation
+  - `GET /api/docs/openapi.json` - OpenAPI 3.0 specification
+
+## 🧪 Testing
+
+Run the comprehensive API test suite:
+
+```bash
+./scripts/test-api.sh
+```
+
+This will test all endpoints, validation, error handling, and rate limiting.
+
+- `GET /api/users/{id}` - Get user by ID
+
+- **Documentation**:
+  - `GET /api/docs` - Interactive API documentation
+  - `GET /api/docs/openapi.json` - OpenAPI 3.0 specification
 
 ---
 

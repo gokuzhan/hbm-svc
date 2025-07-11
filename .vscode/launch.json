@@ -1,0 +1,89 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Next.js: Debug Server-Side",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/next/dist/bin/next",
+      "args": ["dev"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "NODE_OPTIONS": "--inspect"
+      },
+      "envFile": "${workspaceFolder}/.env.local",
+      "console": "integratedTerminal",
+      "serverReadyAction": {
+        "pattern": "started server on .+, url: (https?://.+)",
+        "uriFormat": "%s",
+        "action": "debugWithChrome"
+      }
+    },
+    {
+      "name": "Next.js: Debug Client-Side",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}",
+      "sourceMapPathOverrides": {
+        "webpack://_N_E/*": "${webRoot}/*",
+        "webpack://./src/*": "${webRoot}/src/*"
+      }
+    },
+    {
+      "name": "Next.js: Debug Full Stack",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/next/dist/bin/next",
+      "args": ["dev"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "NODE_OPTIONS": "--inspect"
+      },
+      "envFile": "${workspaceFolder}/.env.local",
+      "console": "integratedTerminal",
+      "serverReadyAction": {
+        "pattern": "started server on .+, url: (https?://.+)",
+        "uriFormat": "%s",
+        "action": "debugWithChrome"
+      }
+    },
+    {
+      "name": "Database: Test Connection",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/tsx/dist/cli.mjs",
+      "args": ["${workspaceFolder}/src/lib/db/test-connection.ts"],
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env.local",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Database: Run Migration",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/tsx/dist/cli.mjs",
+      "args": ["${workspaceFolder}/src/lib/db/migrate.ts"],
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env.local",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Database: Seed",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/tsx/dist/cli.mjs",
+      "args": ["${workspaceFolder}/src/lib/db/seed.ts", "seed"],
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env.local",
+      "console": "integratedTerminal"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Next.js: Debug Full Stack",
+      "configurations": ["Next.js: Debug Server-Side", "Next.js: Debug Client-Side"],
+      "stopAll": true
+    }
+  ]
+}

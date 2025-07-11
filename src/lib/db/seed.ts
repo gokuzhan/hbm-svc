@@ -72,4 +72,4 @@ if (require.main === module) {
   }
 }
 
-export { seedDatabase, resetDatabase };
+export { resetDatabase, seedDatabase };
