@@ -37,7 +37,6 @@ export const orders = pgTable(
     }),
     amount: decimal('amount', { precision: 10, scale: 2 }),
     notes: text('notes'),
-    assignedTo: uuid('assigned_to').references(() => users.id, { onDelete: 'set null' }),
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
     // Status computed from these datetime fields and quotation data
     quotedAt: timestamp('quoted_at', { withTimezone: true }),
@@ -159,6 +158,7 @@ export const orderQuotations = pgTable(
       .notNull()
       .references(() => orders.id, { onDelete: 'cascade' }),
     quotationNumber: varchar('quotation_number', { length: 100 }).notNull().unique(),
+    version: integer('version').notNull().default(1),
     amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
     quotationMediaId: uuid('quotation_media_id').references(() => media.id, {
       onDelete: 'set null',
@@ -248,10 +248,6 @@ export const ordersRelations = relations(orders, ({ one, many }) => ({
   productionStage: one(productionStages, {
     fields: [orders.productionStageId],
     references: [productionStages.id],
-  }),
-  assignedToUser: one(users, {
-    fields: [orders.assignedTo],
-    references: [users.id],
   }),
   createdByUser: one(users, {
     fields: [orders.createdBy],
