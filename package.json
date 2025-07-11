@@ -23,6 +23,10 @@
     "db:flush": "dotenv -e .env.local -- tsx scripts/db-flush.ts",
     "db:reset": "dotenv -e .env.local -- tsx scripts/db-reset.ts",
     "dev:all": "concurrently \"npm run dev\" \"npm run db:studio\"",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --ci --coverage --watchAll=false",
     "check": "npm run type-check && npm run lint && npm run format:check",
     "fix": "npm run lint:fix && npm run format",
     "prepare": "husky"
@@ -60,7 +64,9 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.6.3",
     "@types/cors": "^2.8.19",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.19.7",
     "@types/pg": "^8.15.4",
     "@types/react": "^19",
@@ -71,9 +77,11 @@
     "eslint-config-next": "15.3.5",
     "eslint-config-prettier": "^10.1.5",
     "husky": "^9.1.7",
+    "jest": "^30.0.4",
     "lint-staged": "^16.1.2",
     "prettier": "^3.6.2",
     "tailwindcss": "^4",
+    "ts-jest": "^29.4.0",
     "tsx": "^4.20.3",
     "tw-animate-css": "^1.3.5",
     "typescript": "^5"
