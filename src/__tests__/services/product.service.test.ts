@@ -1,4 +1,5 @@
 import { ACTIONS, RESOURCES } from '@/constants';
+import { BusinessRuleValidationError } from '@/lib/business-rules/errors';
 import { ProductRepository } from '@/lib/repositories/product.repository';
 import {
   CreateProductData,
@@ -77,6 +78,16 @@ describe('ProductService', () => {
     updatedAt: new Date(),
   };
 
+  const mockOrderType = {
+    id: 'order-type-1',
+    name: 'White Label',
+    description: 'White Label order type',
+    isActive: true,
+    supportsProducts: true,
+    supportsVariableProducts: true,
+    createdAt: new Date(),
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
 
@@ -90,6 +101,7 @@ describe('ProductService', () => {
       getProductVariants: jest.fn(),
       findByOrderType: jest.fn(),
       findVariableProducts: jest.fn(),
+      getOrderTypeById: jest.fn(),
       logOperation: jest.fn(),
     } as unknown as jest.Mocked<ProductRepository>;
 
@@ -109,12 +121,14 @@ describe('ProductService', () => {
 
     it('should create product successfully for staff', async () => {
       mockProductRepository.findBySku.mockResolvedValue(null);
+      mockProductRepository.getOrderTypeById.mockResolvedValue(mockOrderType);
       mockProductRepository.create.mockResolvedValue(mockProduct);
 
       const result = await productService.createProduct(mockStaffContext, validProductData);
 
       expect(result).toEqual(mockProduct);
       expect(mockProductRepository.findBySku).toHaveBeenCalledWith('NEW-001');
+      expect(mockProductRepository.getOrderTypeById).toHaveBeenCalledWith('order-type-1');
       expect(mockProductRepository.create).toHaveBeenCalledWith({
         ...validProductData,
         isActive: true,
@@ -162,6 +176,7 @@ describe('ProductService', () => {
 
     it('should handle repository errors', async () => {
       mockProductRepository.findBySku.mockResolvedValue(null);
+      mockProductRepository.getOrderTypeById.mockResolvedValue(mockOrderType);
       mockProductRepository.create.mockRejectedValue(new Error('Database error'));
 
       await expect(
@@ -178,6 +193,8 @@ describe('ProductService', () => {
 
     it('should update product successfully for staff', async () => {
       mockProductRepository.findById.mockResolvedValue(mockProduct);
+      mockProductRepository.getOrderTypeById.mockResolvedValue(mockOrderType);
+      mockProductRepository.getProductVariants.mockResolvedValue([]);
       mockProductRepository.update.mockResolvedValue({ ...mockProduct, ...updateData });
 
       const result = await productService.updateProduct(mockStaffContext, 'product-1', updateData);
@@ -211,6 +228,8 @@ describe('ProductService', () => {
 
       mockProductRepository.findById.mockResolvedValue(existingProduct);
       mockProductRepository.findBySku.mockResolvedValue(anotherProduct);
+      mockProductRepository.getOrderTypeById.mockResolvedValue(mockOrderType);
+      mockProductRepository.getProductVariants.mockResolvedValue([]);
 
       const updateWithSku = { ...updateData, sku: 'ANOTHER-001' };
 
@@ -224,6 +243,8 @@ describe('ProductService', () => {
     it('should allow updating with same SKU', async () => {
       mockProductRepository.findById.mockResolvedValue(mockProduct);
       mockProductRepository.update.mockResolvedValue({ ...mockProduct, ...updateData });
+      mockProductRepository.getOrderTypeById.mockResolvedValue(mockOrderType);
+      mockProductRepository.getProductVariants.mockResolvedValue([]);
 
       const updateWithSameSku = { ...updateData, sku: mockProduct.sku };
 
@@ -408,14 +429,18 @@ describe('ProductService', () => {
 
     it('should throw error if product is not variable', async () => {
       mockProductRepository.findById.mockResolvedValue(mockProduct); // non-variable product
+      mockProductRepository.getOrderTypeById.mockResolvedValue(mockOrderType);
+      mockProductRepository.getProductVariants.mockResolvedValue([]);
 
       await expect(
         productService.createProductVariant(mockStaffContext, variantData)
-      ).rejects.toThrow(ValidationError);
+      ).rejects.toThrow(BusinessRuleValidationError);
     });
 
     it('should throw service error indicating feature not implemented', async () => {
       mockProductRepository.findById.mockResolvedValue(mockVariableProduct);
+      mockProductRepository.getOrderTypeById.mockResolvedValue(mockOrderType);
+      mockProductRepository.getProductVariants.mockResolvedValue([]);
 
       await expect(
         productService.createProductVariant(mockStaffContext, variantData)
@@ -644,7 +669,7 @@ describe('ProductService', () => {
             validateDelete: (context: ServiceContext, id: string) => Promise<void>;
           }
         ).validateDelete(mockStaffContext, 'product-2')
-      ).rejects.toThrow(ValidationError);
+      ).rejects.toThrow(BusinessRuleValidationError);
     });
 
     it('should allow deletion if product has no variants', async () => {

@@ -1,9 +1,17 @@
 // Product Service with Variant and Category Management
 
 import { ACTIONS, RESOURCES } from '@/constants';
+import {
+  BusinessRuleValidationError,
+  validateProductBusinessRules,
+  validateProductDeletionBusinessRules,
+  validateProductSKUBusinessRules,
+  validateProductUpdateBusinessRules,
+  validateProductVariantBusinessRules,
+} from '@/lib/business-rules';
 import { PaginatedResult, QueryOptions } from '@/lib/dal/base';
 import { ProductRepository } from '@/lib/repositories/product.repository';
-import { Product, ProductVariant } from '@/types';
+import { OrderType, Product, ProductVariant } from '@/types';
 import { BaseServiceWithAuth } from './base.service';
 import { PermissionResult, ServiceContext, ServiceError, ValidationError } from './types';
 
@@ -86,6 +94,47 @@ export class ProductService extends BaseServiceWithAuth<Product> {
       }
     }
 
+    // Get order type for business rule validation
+    const orderType = await this.getOrderTypeById(productData.orderTypeId);
+    if (!orderType) {
+      throw new ValidationError('Order type not found');
+    }
+
+    // Create product object for validation
+    const productForValidation = {
+      id: 'temp-id', // Temporary ID for validation
+      name: productData.name,
+      description: productData.description,
+      sku: productData.sku,
+      orderTypeId: productData.orderTypeId,
+      isVariable: productData.isVariable,
+      isActive: productData.isActive ?? true,
+      createdBy: context.userId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      orderType,
+    };
+
+    // Validate business rules
+    const businessRuleValidation = validateProductBusinessRules(productForValidation, orderType, true);
+    if (!businessRuleValidation.isValid) {
+      throw new BusinessRuleValidationError(
+        businessRuleValidation.errors,
+        businessRuleValidation.warnings,
+        { productName: productData.name, orderTypeName: orderType.name }
+      );
+    }
+
+    // Validate SKU business rules
+    const skuValidation = validateProductSKUBusinessRules(productData.sku);
+    if (!skuValidation.isValid) {
+      throw new BusinessRuleValidationError(
+        skuValidation.errors,
+        skuValidation.warnings,
+        { sku: productData.sku }
+      );
+    }
+
     const productToCreate = {
       ...productData,
       isActive: productData.isActive ?? true,
@@ -125,8 +174,43 @@ export class ProductService extends BaseServiceWithAuth<Product> {
       throw new ValidationError('Product not found');
     }
 
+    // Get order type for business rule validation (current or new)
+    const orderTypeId = productData.orderTypeId || existingProduct.orderTypeId;
+    const orderType = await this.getOrderTypeById(orderTypeId);
+    if (!orderType) {
+      throw new ValidationError('Order type not found');
+    }
+
+    // Check if product has variants for business rule validation
+    const variants = await this.productRepository.getProductVariants(productId);
+    const hasVariants = variants.length > 0;
+
+    // Validate business rules for the update
+    const businessRuleValidation = validateProductUpdateBusinessRules(
+      existingProduct,
+      productData,
+      orderType,
+      hasVariants
+    );
+    if (!businessRuleValidation.isValid) {
+      throw new BusinessRuleValidationError(
+        businessRuleValidation.errors,
+        businessRuleValidation.warnings,
+        { productId, existingProductName: existingProduct.name, orderTypeName: orderType.name }
+      );
+    }
+
     // Validate SKU if being changed
     if (productData.sku && productData.sku !== existingProduct.sku) {
+      const skuValidation = validateProductSKUBusinessRules(productData.sku);
+      if (!skuValidation.isValid) {
+        throw new BusinessRuleValidationError(
+          skuValidation.errors,
+          skuValidation.warnings,
+          { sku: productData.sku, productId }
+        );
+      }
+
       const skuExists = await this.productRepository.findBySku(productData.sku);
       if (skuExists) {
         throw new ValidationError('SKU already exists');
@@ -272,8 +356,41 @@ export class ProductService extends BaseServiceWithAuth<Product> {
       throw new ValidationError('Product not found');
     }
 
-    if (!product.isVariable) {
-      throw new ValidationError('Cannot create variants for non-variable products');
+    // Get order type for business rule validation
+    const orderType = await this.getOrderTypeById(product.orderTypeId);
+    if (!orderType) {
+      throw new ValidationError('Order type not found');
+    }
+
+    // Create variant object for validation
+    const variantForValidation = {
+      id: 'temp-id', // Temporary ID for validation
+      productId: variantData.productId,
+      name: variantData.name,
+      variantIdentifier: variantData.variantIdentifier,
+      isActive: variantData.isActive ?? true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      product,
+    };
+
+    // Validate business rules for variant creation
+    const businessRuleValidation = validateProductVariantBusinessRules(
+      variantForValidation,
+      product,
+      orderType
+    );
+
+    if (!businessRuleValidation.isValid) {
+      throw new BusinessRuleValidationError(
+        businessRuleValidation.errors,
+        businessRuleValidation.warnings,
+        {
+          productId: variantData.productId,
+          variantName: variantData.name,
+          orderTypeName: orderType.name
+        }
+      );
     }
 
     // For now, throw an error indicating this feature needs repository implementation
@@ -284,11 +401,10 @@ export class ProductService extends BaseServiceWithAuth<Product> {
    * Update product variant (staff only)
    * Note: This would need to be implemented in the repository layer
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async updateProductVariant(
     context: ServiceContext,
-    _variantId: string,
-    _variantData: UpdateProductVariantData
+    variantId: string,
+    variantData: UpdateProductVariantData
   ): Promise<ProductVariant | null> {
     await this.requirePermission(context, ACTIONS.UPDATE);
 
@@ -298,6 +414,8 @@ export class ProductService extends BaseServiceWithAuth<Product> {
     }
 
     // For now, throw an error indicating this feature needs repository implementation
+    // TODO: Implement with variantId and variantData when repository layer is ready
+    console.log('Update variant:', variantId, variantData); // Placeholder to avoid unused variable warning
     throw new ServiceError('Product variant update not yet implemented in repository layer');
   }
 
@@ -332,13 +450,14 @@ export class ProductService extends BaseServiceWithAuth<Product> {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected async validateUpdate(
-    _context: ServiceContext,
-    _id: string,
-    _data: Partial<Product>
+    context: ServiceContext,
+    id: string,
+    data: Partial<Product>
   ): Promise<void> {
     // Additional validation for product updates
+    // TODO: Implement validation logic using context, id, and data
+    console.log('Validate update:', context, id, data); // Placeholder to avoid unused variable warning
   }
 
   protected async validateDelete(context: ServiceContext, id: string): Promise<void> {
@@ -350,11 +469,30 @@ export class ProductService extends BaseServiceWithAuth<Product> {
 
     // Check for variants
     const variants = await this.productRepository.getProductVariants(id);
-    if (variants.length > 0) {
-      throw new ValidationError('Cannot delete product with existing variants');
+    const hasVariants = variants.length > 0;
+
+    // Validate business rules for deletion
+    const businessRuleValidation = validateProductDeletionBusinessRules(
+      product,
+      hasVariants,
+      false // TODO: Add check for order items when order item repository method is available
+    );
+
+    if (!businessRuleValidation.isValid) {
+      throw new BusinessRuleValidationError(
+        businessRuleValidation.errors,
+        businessRuleValidation.warnings,
+        { productId: id, productName: product.name }
+      );
     }
 
-    // Additional business logic for product deletion
+    // Log warnings if any
+    if (businessRuleValidation.warnings.length > 0) {
+      this.logServiceOperation('validateDelete.warnings', context, {
+        productId: id,
+        warnings: businessRuleValidation.warnings,
+      });
+    }
   }
 
   protected async checkCustomerAccess(context: ServiceContext, entity: Product): Promise<boolean> {
@@ -405,6 +543,27 @@ export class ProductService extends BaseServiceWithAuth<Product> {
 
     if (!variantData.variantIdentifier || variantData.variantIdentifier.trim().length === 0) {
       throw new ValidationError('Variant identifier is required');
+    }
+  }
+
+  /**
+   * Helper method to get order type by ID
+   */
+  private async getOrderTypeById(orderTypeId: string): Promise<OrderType | null> {
+    try {
+      const result = await this.productRepository.getOrderTypeById(orderTypeId);
+      if (!result) {
+        return null;
+      }
+
+      // Ensure createdAt is a Date object
+      return {
+        ...result,
+        createdAt: result.createdAt || new Date(),
+      };
+    } catch (error) {
+      this.logServiceOperation('getOrderTypeById.error', { userId: 'system', userType: 'staff', permissions: [] }, { orderTypeId, error });
+      return null;
     }
   }
 }

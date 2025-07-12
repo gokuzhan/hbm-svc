@@ -43,14 +43,14 @@ export class ProductRepository extends BaseService<Product> {
       updatedAt: dbProduct.updatedAt,
       orderType: dbProduct.orderType
         ? {
-            id: dbProduct.orderType.id,
-            name: dbProduct.orderType.name,
-            description: dbProduct.orderType.description || undefined,
-            isActive: dbProduct.orderType.isActive ?? true,
-            supportsProducts: dbProduct.orderType.supportsProducts ?? true,
-            supportsVariableProducts: dbProduct.orderType.supportsVariableProducts ?? false,
-            createdAt: dbProduct.orderType.createdAt,
-          }
+          id: dbProduct.orderType.id,
+          name: dbProduct.orderType.name,
+          description: dbProduct.orderType.description || undefined,
+          isActive: dbProduct.orderType.isActive ?? true,
+          supportsProducts: dbProduct.orderType.supportsProducts ?? true,
+          supportsVariableProducts: dbProduct.orderType.supportsVariableProducts ?? false,
+          createdAt: dbProduct.orderType.createdAt,
+        }
         : undefined,
     };
   }
@@ -525,6 +525,45 @@ export class ProductRepository extends BaseService<Product> {
 
     if (mediaCount[0]?.count > 0) {
       throw new Error('Cannot delete product with media files. Remove media first.');
+    }
+  }
+
+  // Order Type related methods
+  async getOrderTypeById(orderTypeId: string) {
+    this.logOperation('getOrderTypeById', { orderTypeId });
+
+    try {
+      const result = await db
+        .select({
+          id: orderTypes.id,
+          name: orderTypes.name,
+          description: orderTypes.description,
+          isActive: orderTypes.isActive,
+          supportsProducts: orderTypes.supportsProducts,
+          supportsVariableProducts: orderTypes.supportsVariableProducts,
+          createdAt: orderTypes.createdAt,
+        })
+        .from(orderTypes)
+        .where(eq(orderTypes.id, orderTypeId))
+        .limit(1);
+
+      if (result.length === 0) {
+        return null;
+      }
+
+      const orderType = result[0];
+      return {
+        id: orderType.id,
+        name: orderType.name,
+        description: orderType.description || undefined,
+        isActive: orderType.isActive ?? true,
+        supportsProducts: orderType.supportsProducts ?? true,
+        supportsVariableProducts: orderType.supportsVariableProducts ?? false,
+        createdAt: orderType.createdAt,
+      };
+    } catch (error) {
+      this.logError('getOrderTypeById', error, { orderTypeId });
+      throw error;
     }
   }
 }

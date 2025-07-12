@@ -1,10 +1,17 @@
 // Order Service with Status Management and Business Rules
 
 import { ACTIONS, RESOURCES } from '@/constants';
+import {
+  BusinessRuleValidationError,
+  validateOrderCreationBusinessRules,
+  validateOrderItemsBusinessRules,
+  validateOrderUpdateBusinessRules
+} from '@/lib/business-rules';
 import { PaginatedResult, QueryOptions } from '@/lib/dal/base';
 import { CustomerRepository } from '@/lib/repositories/customer.repository';
 import { OrderRepository } from '@/lib/repositories/order.repository';
-import { Order, OrderStatus } from '@/types';
+import { ProductRepository } from '@/lib/repositories/product.repository';
+import { Order, OrderStatus, OrderType } from '@/types';
 import { BaseServiceWithAuth } from './base.service';
 import { PermissionResult, ServiceContext, ServiceError, ValidationError } from './types';
 
@@ -40,12 +47,14 @@ export interface OrderStatusTransition {
 export class OrderService extends BaseServiceWithAuth<Order> {
   private orderRepository: OrderRepository;
   private customerRepository: CustomerRepository;
+  private productRepository: ProductRepository;
 
   constructor() {
     const orderRepository = new OrderRepository();
     super(orderRepository, RESOURCES.ORDERS);
     this.orderRepository = orderRepository;
     this.customerRepository = new CustomerRepository();
+    this.productRepository = new ProductRepository();
   }
 
   /**
@@ -83,6 +92,48 @@ export class OrderService extends BaseServiceWithAuth<Order> {
     // For customer users, they can only create orders for themselves
     if (context.userType === 'customer' && context.userId !== orderData.customerId) {
       throw new ValidationError('Customers can only create orders for themselves');
+    }
+
+    // Get order type if specified
+    let orderType: OrderType | null = null;
+    if (orderData.orderTypeId) {
+      orderType = await this.getOrderTypeById(orderData.orderTypeId);
+      if (!orderType) {
+        throw new ValidationError('Order type not found');
+      }
+    }
+
+    // Validate business rules for order creation
+    try {
+      if (orderType) {
+        await validateOrderCreationBusinessRules({
+          customerId: orderData.customerId,
+          orderTypeId: orderData.orderTypeId,
+          items: orderData.items,
+        }, orderType);
+      }
+
+      // Validate business rules for order items
+      if (orderData.items && orderData.items.length > 0 && orderType) {
+        // Convert CreateOrderItemData to OrderItem-like structure for validation
+        const orderItemsForValidation = orderData.items.map((item, index) => ({
+          id: `temp-${index}`, // Temporary ID for validation
+          orderId: 'temp-order-id', // Temporary order ID for validation
+          productVariantId: item.productVariantId,
+          itemName: item.itemName,
+          itemDescription: item.itemDescription,
+          quantity: item.quantity,
+          specifications: item.specifications,
+          createdAt: new Date(), // Temporary date for validation
+        }));
+
+        await validateOrderItemsBusinessRules(orderItemsForValidation, orderType);
+      }
+    } catch (error) {
+      if (error instanceof BusinessRuleValidationError) {
+        throw new ValidationError(`Business rule violation: ${error.message}`);
+      }
+      throw error;
     }
 
     // Generate order number
@@ -128,6 +179,29 @@ export class OrderService extends BaseServiceWithAuth<Order> {
     const existingOrder = await this.orderRepository.findById(orderId);
     if (!existingOrder) {
       throw new ValidationError('Order not found');
+    }
+
+    // Validate business rules for order updates
+    try {
+      // Get order type if being updated
+      let orderType: OrderType | null = null;
+      if (orderData.orderTypeId) {
+        orderType = await this.getOrderTypeById(orderData.orderTypeId);
+        if (!orderType) {
+          throw new ValidationError('Order type not found');
+        }
+      } else if (existingOrder.orderTypeId) {
+        orderType = await this.getOrderTypeById(existingOrder.orderTypeId);
+      }
+
+      if (orderType) {
+        await validateOrderUpdateBusinessRules(existingOrder, orderData, orderType);
+      }
+    } catch (error) {
+      if (error instanceof BusinessRuleValidationError) {
+        throw new ValidationError(`Business rule violation: ${error.message}`);
+      }
+      throw error;
     }
 
     this.logServiceOperation('updateOrder', context, { orderId, updates: Object.keys(orderData) });
@@ -324,13 +398,14 @@ export class OrderService extends BaseServiceWithAuth<Order> {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected async validateUpdate(
-    _context: ServiceContext,
-    _id: string,
-    _data: Partial<Order>
+    context: ServiceContext,
+    id: string,
+    data: Partial<Order>
   ): Promise<void> {
     // Additional validation for order updates
+    // TODO: Implement validation logic using context, id, and data
+    console.log('Validate update:', context, id, data); // Placeholder to avoid unused variable warning
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -465,5 +540,29 @@ export class OrderService extends BaseServiceWithAuth<Order> {
       return 'quoted';
     }
     return 'requested';
+  }
+
+  private async getOrderTypeById(orderTypeId: string): Promise<OrderType | null> {
+    try {
+      const orderTypeData = await this.productRepository.getOrderTypeById(orderTypeId);
+      if (!orderTypeData) {
+        return null;
+      }
+
+      // Ensure createdAt is a Date object
+      return {
+        ...orderTypeData,
+        createdAt: orderTypeData.createdAt || new Date(),
+      };
+    } catch (error) {
+      // Create a minimal service context for logging
+      const logContext: ServiceContext = {
+        userId: 'system',
+        userType: 'staff',
+        permissions: []
+      };
+      this.logServiceOperation('getOrderTypeById.error', logContext, { orderTypeId, error });
+      return null;
+    }
   }
 }

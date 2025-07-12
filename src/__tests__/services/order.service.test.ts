@@ -1,5 +1,6 @@
 import { CustomerRepository } from '@/lib/repositories/customer.repository';
 import { OrderRepository } from '@/lib/repositories/order.repository';
+import { ProductRepository } from '@/lib/repositories/product.repository';
 import { OrderService } from '@/lib/services/order.service';
 import { PermissionError, ServiceContext, ValidationError } from '@/lib/services/types';
 import { OrderStatus } from '@/types';
@@ -7,11 +8,13 @@ import { OrderStatus } from '@/types';
 // Mock the repositories
 jest.mock('@/lib/repositories/order.repository');
 jest.mock('@/lib/repositories/customer.repository');
+jest.mock('@/lib/repositories/product.repository');
 
 describe('OrderService', () => {
   let orderService: OrderService;
   let mockOrderRepository: jest.Mocked<OrderRepository>;
   let mockCustomerRepository: jest.Mocked<CustomerRepository>;
+  let mockProductRepository: jest.Mocked<ProductRepository>;
   let mockContext: ServiceContext;
 
   beforeEach(() => {
@@ -19,12 +22,15 @@ describe('OrderService', () => {
 
     mockOrderRepository = new OrderRepository() as jest.Mocked<OrderRepository>;
     mockCustomerRepository = new CustomerRepository() as jest.Mocked<CustomerRepository>;
+    mockProductRepository = new ProductRepository() as jest.Mocked<ProductRepository>;
 
     orderService = new OrderService();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (orderService as any).orderRepository = mockOrderRepository;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (orderService as any).customerRepository = mockCustomerRepository;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (orderService as any).productRepository = mockProductRepository;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (orderService as any).repositoryService = mockOrderRepository;
 
@@ -68,6 +74,16 @@ describe('OrderService', () => {
         updatedAt: new Date(),
       };
 
+      const mockOrderType = {
+        id: 'type-123',
+        name: 'Standard Order',
+        description: 'Standard order type',
+        isActive: true,
+        supportsProducts: true,
+        supportsVariableProducts: false,
+        createdAt: new Date(),
+      };
+
       const mockOrder = {
         id: 'order-123',
         orderNumber: 'ORD-2025-001',
@@ -91,6 +107,7 @@ describe('OrderService', () => {
       };
 
       mockCustomerRepository.findById.mockResolvedValue(mockCustomer);
+      mockProductRepository.getOrderTypeById.mockResolvedValue(mockOrderType);
       mockOrderRepository.create.mockResolvedValue(mockOrder);
 
       const result = await orderService.createOrder(mockContext, orderData);
