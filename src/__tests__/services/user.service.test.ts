@@ -252,4 +252,74 @@ describe('UserService', () => {
       expect(result).toEqual(activeUser);
     });
   });
+
+  describe('adminResetPassword', () => {
+    it('should reset password for another user', async () => {
+      const targetUserId = 'user-456';
+      const newPassword = 'NewPassword123';
+
+      const mockUser = {
+        id: targetUserId,
+        email: 'target@example.com',
+        firstName: 'Target',
+        lastName: 'User',
+        isActive: true,
+      } as User;
+
+      mockUserRepository.findById.mockResolvedValue(mockUser);
+      mockUserRepository.updatePassword.mockResolvedValue(true);
+
+      const result = await userService.adminResetPassword(mockContext, targetUserId, newPassword);
+
+      expect(result).toBe(true);
+      expect(mockUserRepository.findById).toHaveBeenCalledWith(targetUserId);
+      expect(mockUserRepository.updatePassword).toHaveBeenCalledWith(
+        targetUserId,
+        expect.any(String) // hashed password
+      );
+    });
+
+    it('should throw ValidationError when admin tries to reset own password', async () => {
+      const newPassword = 'NewPassword123';
+
+      await expect(
+        userService.adminResetPassword(mockContext, mockContext.userId!, newPassword)
+      ).rejects.toThrow(ValidationError);
+      await expect(
+        userService.adminResetPassword(mockContext, mockContext.userId!, newPassword)
+      ).rejects.toThrow('Use changePassword endpoint to change your own password');
+    });
+
+    it('should throw ValidationError for invalid password', async () => {
+      const targetUserId = 'user-456';
+      const weakPassword = '123'; // too weak
+
+      const mockUser = {
+        id: targetUserId,
+        email: 'target@example.com',
+        firstName: 'Target',
+        lastName: 'User',
+        isActive: true,
+      } as User;
+
+      mockUserRepository.findById.mockResolvedValue(mockUser);
+
+      await expect(
+        userService.adminResetPassword(mockContext, targetUserId, weakPassword)
+      ).rejects.toThrow(ValidationError);
+    });
+
+    it('should throw PermissionError when user lacks UPDATE permission', async () => {
+      const targetUserId = 'user-456';
+      const newPassword = 'NewPassword123';
+      const contextWithoutPermission = {
+        ...mockContext,
+        permissions: ['users:read'], // no update permission
+      };
+
+      await expect(
+        userService.adminResetPassword(contextWithoutPermission, targetUserId, newPassword)
+      ).rejects.toThrow(PermissionError);
+    });
+  });
 });

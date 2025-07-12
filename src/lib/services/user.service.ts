@@ -190,6 +190,44 @@ export class UserService extends BaseServiceWithAuth<User> {
   }
 
   /**
+   * Admin reset password (bypasses current password check)
+   */
+  async adminResetPassword(
+    context: ServiceContext,
+    userId: string,
+    newPassword: string
+  ): Promise<boolean> {
+    await this.requirePermission(context, ACTIONS.UPDATE);
+
+    // Prevent admin from resetting their own password this way
+    if (context.userId === userId) {
+      throw new ValidationError('Use changePassword endpoint to change your own password');
+    }
+
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new ValidationError('User not found');
+    }
+
+    // Validate new password
+    this.validatePassword(newPassword);
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    this.logServiceOperation('adminResetPassword', context, { userId });
+
+    try {
+      await this.userRepository.updatePassword(userId, hashedPassword);
+      this.logServiceOperation('adminResetPassword.success', context, { userId });
+      return true;
+    } catch (error) {
+      this.logServiceOperation('adminResetPassword.error', context, { userId, error });
+      throw new ServiceError(`Failed to reset password: ${(error as Error).message}`);
+    }
+  }
+
+  /**
    * Activate/Deactivate user
    */
   async toggleUserStatus(
