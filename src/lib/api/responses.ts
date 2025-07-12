@@ -1,6 +1,8 @@
 // API Response Types and Utilities
+// NOTE: Legacy response utilities - migrating to unified error handling system
 
-import { NextResponse } from 'next/server';
+import { withErrorHandling as unifiedErrorHandling } from '@/lib/errors/error-handler';
+import { NextRequest, NextResponse } from 'next/server';
 import { ZodError } from 'zod';
 
 // Standard API Response format
@@ -121,9 +123,10 @@ export function handleValidationError(error: ZodError): NextResponse<ErrorRespon
 
 /**
  * Handle common API errors
+ * @deprecated Use unified error handling system from @/lib/errors/error-handler
  */
 export function handleApiError(error: unknown): NextResponse<ErrorResponse> {
-  console.error('API Error:', error);
+  console.error('API Error (Legacy Handler):', error);
 
   // Handle Zod validation errors
   if (error instanceof ZodError) {
@@ -207,6 +210,7 @@ export function methodNotAllowed(allowedMethods: string[]): NextResponse<ErrorRe
 
 /**
  * API route wrapper for consistent error handling
+ * @deprecated Use withErrorHandling from @/lib/errors/error-handler
  */
 export function withErrorHandling<T extends unknown[], R>(
   handler: (...args: T) => Promise<NextResponse<R>>
@@ -215,9 +219,20 @@ export function withErrorHandling<T extends unknown[], R>(
     try {
       return await handler(...args);
     } catch (error) {
+      // Use legacy handler for backward compatibility
       return handleApiError(error);
     }
   };
+}
+
+/**
+ * New unified error handling wrapper
+ * Delegates to the new unified error handling system
+ */
+export function withUnifiedErrorHandling<T extends unknown[]>(
+  handler: (request: NextRequest, ...args: T) => Promise<NextResponse>
+) {
+  return unifiedErrorHandling(handler);
 }
 
 // Common HTTP status codes

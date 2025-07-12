@@ -1,8 +1,9 @@
 // RBAC Middleware for API Route Protection
 
 import { logger } from '@/lib/api/logger';
-import { createErrorResponse } from '@/lib/api/responses';
 import { authOptions } from '@/lib/auth/config';
+import { AuthenticationError, PermissionError } from '@/lib/errors';
+import { throwPermissionError, withErrorHandling } from '@/lib/errors/error-handler';
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { Action, Resource } from './permissions';
@@ -69,7 +70,7 @@ export function canAccessCustomerData(
 /**
  * Middleware for requiring authentication
  */
-export async function requireAuth(request: NextRequest): Promise<AuthContext | NextResponse> {
+export async function requireAuth(request: NextRequest): Promise<AuthContext> {
   try {
     const session = await getServerSession(authOptions);
 
@@ -80,9 +81,7 @@ export async function requireAuth(request: NextRequest): Promise<AuthContext | N
         userAgent: request.headers.get('user-agent'),
       });
 
-      return createErrorResponse('Authentication required', 401, {
-        code: 'AUTHENTICATION_REQUIRED',
-      });
+      throw new AuthenticationError('Authentication required');
     }
 
     return {
@@ -90,20 +89,19 @@ export async function requireAuth(request: NextRequest): Promise<AuthContext | N
       session,
     };
   } catch (error) {
+    if (error instanceof AuthenticationError) {
+      throw error;
+    }
     logger.error('Authentication check failed', { error });
-    return createErrorResponse('Authentication failed', 401, { code: 'AUTHENTICATION_FAILED' });
+    throw new AuthenticationError('Authentication failed');
   }
 }
 
 /**
  * Middleware for requiring staff authentication
  */
-export async function requireStaffAuth(request: NextRequest): Promise<AuthContext | NextResponse> {
+export async function requireStaffAuth(request: NextRequest): Promise<AuthContext> {
   const authResult = await requireAuth(request);
-
-  if (authResult instanceof NextResponse) {
-    return authResult;
-  }
 
   if (authResult.user.userType !== 'staff') {
     logger.warn('Non-staff user attempted to access staff endpoint', {
@@ -112,7 +110,10 @@ export async function requireStaffAuth(request: NextRequest): Promise<AuthContex
       url: request.url,
     });
 
-    return createErrorResponse('Staff access required', 403, { code: 'STAFF_ACCESS_REQUIRED' });
+    throw new PermissionError('Staff access required', [], {
+      userType: authResult.user.userType,
+      requiredType: 'staff',
+    });
   }
 
   return authResult;
@@ -121,14 +122,8 @@ export async function requireStaffAuth(request: NextRequest): Promise<AuthContex
 /**
  * Middleware for requiring customer authentication
  */
-export async function requireCustomerAuth(
-  request: NextRequest
-): Promise<AuthContext | NextResponse> {
+export async function requireCustomerAuth(request: NextRequest): Promise<AuthContext> {
   const authResult = await requireAuth(request);
-
-  if (authResult instanceof NextResponse) {
-    return authResult;
-  }
 
   if (authResult.user.userType !== 'customer') {
     logger.warn('Non-customer user attempted to access customer endpoint', {
@@ -137,8 +132,9 @@ export async function requireCustomerAuth(
       url: request.url,
     });
 
-    return createErrorResponse('Customer access required', 403, {
-      code: 'CUSTOMER_ACCESS_REQUIRED',
+    throw new PermissionError('Customer access required', [], {
+      userType: authResult.user.userType,
+      requiredType: 'customer',
     });
   }
 
@@ -151,12 +147,8 @@ export async function requireCustomerAuth(
 export async function requirePermission(
   request: NextRequest,
   permission: string
-): Promise<AuthContext | NextResponse> {
+): Promise<AuthContext> {
   const authResult = await requireStaffAuth(request);
-
-  if (authResult instanceof NextResponse) {
-    return authResult;
-  }
 
   if (!hasPermission(authResult.user.permissions, permission)) {
     logger.warn('Insufficient permissions for API access', {
@@ -166,10 +158,7 @@ export async function requirePermission(
       url: request.url,
     });
 
-    return createErrorResponse('Insufficient permissions', 403, {
-      code: 'INSUFFICIENT_PERMISSIONS',
-      requiredPermission: permission,
-    });
+    throwPermissionError('access', 'this resource', [permission], authResult.user.permissions);
   }
 
   return authResult;
@@ -182,7 +171,7 @@ export async function requireResourcePermission(
   request: NextRequest,
   resource: Resource,
   action: Action
-): Promise<AuthContext | NextResponse> {
+): Promise<AuthContext> {
   const permission = `${resource}:${action}`;
   return requirePermission(request, permission);
 }
@@ -194,15 +183,10 @@ export function withPermission(permission: string) {
   return function <T extends unknown[]>(
     handler: (request: NextRequest, context: AuthContext, ...args: T) => Promise<NextResponse>
   ) {
-    return async (request: NextRequest, ...args: T): Promise<NextResponse> => {
+    return withErrorHandling(async (request: NextRequest, ...args: T): Promise<NextResponse> => {
       const authResult = await requirePermission(request, permission);
-
-      if (authResult instanceof NextResponse) {
-        return authResult;
-      }
-
       return handler(request, authResult, ...args);
-    };
+    });
   };
 }
 
@@ -213,15 +197,10 @@ export function withResourcePermission(resource: Resource, action: Action) {
   return function <T extends unknown[]>(
     handler: (request: NextRequest, context: AuthContext, ...args: T) => Promise<NextResponse>
   ) {
-    return async (request: NextRequest, ...args: T): Promise<NextResponse> => {
+    return withErrorHandling(async (request: NextRequest, ...args: T): Promise<NextResponse> => {
       const authResult = await requireResourcePermission(request, resource, action);
-
-      if (authResult instanceof NextResponse) {
-        return authResult;
-      }
-
       return handler(request, authResult, ...args);
-    };
+    });
   };
 }
 
@@ -231,15 +210,10 @@ export function withResourcePermission(resource: Resource, action: Action) {
 export function withStaffAuth<T extends unknown[]>(
   handler: (request: NextRequest, context: AuthContext, ...args: T) => Promise<NextResponse>
 ) {
-  return async (request: NextRequest, ...args: T): Promise<NextResponse> => {
+  return withErrorHandling(async (request: NextRequest, ...args: T): Promise<NextResponse> => {
     const authResult = await requireStaffAuth(request);
-
-    if (authResult instanceof NextResponse) {
-      return authResult;
-    }
-
     return handler(request, authResult, ...args);
-  };
+  });
 }
 
 /**
@@ -248,15 +222,10 @@ export function withStaffAuth<T extends unknown[]>(
 export function withCustomerAuth<T extends unknown[]>(
   handler: (request: NextRequest, context: AuthContext, ...args: T) => Promise<NextResponse>
 ) {
-  return async (request: NextRequest, ...args: T): Promise<NextResponse> => {
+  return withErrorHandling(async (request: NextRequest, ...args: T): Promise<NextResponse> => {
     const authResult = await requireCustomerAuth(request);
-
-    if (authResult instanceof NextResponse) {
-      return authResult;
-    }
-
     return handler(request, authResult, ...args);
-  };
+  });
 }
 
 /**
@@ -267,17 +236,13 @@ export function withDualAuth<T extends unknown[]>(
   staffHandler: (request: NextRequest, context: AuthContext, ...args: T) => Promise<NextResponse>,
   customerHandler: (request: NextRequest, context: AuthContext, ...args: T) => Promise<NextResponse>
 ) {
-  return async (request: NextRequest, ...args: T): Promise<NextResponse> => {
+  return withErrorHandling(async (request: NextRequest, ...args: T): Promise<NextResponse> => {
     const authResult = await requireAuth(request);
-
-    if (authResult instanceof NextResponse) {
-      return authResult;
-    }
 
     if (authResult.user.userType === 'staff') {
       return staffHandler(request, authResult, ...args);
     } else {
       return customerHandler(request, authResult, ...args);
     }
-  };
+  });
 }

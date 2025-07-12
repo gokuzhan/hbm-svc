@@ -1,4 +1,5 @@
 // Service Layer Types and Interfaces
+// NOTE: Migrating to unified error handling system
 
 export interface ServiceContext {
   userId?: string;
@@ -46,35 +47,7 @@ export interface ServiceResult<T> {
 }
 
 // Service error types
-export class ServiceError extends Error {
-  constructor(
-    message: string,
-    public code: string = 'SERVICE_ERROR',
-    public statusCode: number = 500
-  ) {
-    super(message);
-    this.name = 'ServiceError';
-  }
-}
+// NOTE: Using unified error handling system
 
-export class PermissionError extends ServiceError {
-  constructor(message: string = 'Insufficient permissions') {
-    super(message, 'PERMISSION_DENIED', 403);
-    this.name = 'PermissionError';
-  }
-}
-
-export class ValidationError extends ServiceError {
-  constructor(message: string) {
-    super(message, 'VALIDATION_ERROR', 400);
-    this.name = 'ValidationError';
-  }
-}
-
-export class NotFoundError extends ServiceError {
-  constructor(resource: string, id?: string) {
-    const message = id ? `${resource} with id ${id} not found` : `${resource} not found`;
-    super(message, 'NOT_FOUND', 404);
-    this.name = 'NotFoundError';
-  }
-}
+// Re-export unified error classes for service layer backward compatibility
+export { NotFoundError, PermissionError, ServiceError, ValidationError } from '@/lib/errors';
