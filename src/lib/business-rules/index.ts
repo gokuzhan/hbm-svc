@@ -14,29 +14,52 @@ export * from './validation';
 
 // Error handling (explicit exports to avoid conflicts)
 export {
-  BUSINESS_RULE_ERROR_CODES, BusinessRuleValidationError, OrderBusinessRuleError, OrderTypeBusinessRuleError,
-  ProductBusinessRuleError, getErrorCode,
-  type BusinessRuleErrorCode
+  BUSINESS_RULE_ERROR_CODES,
+  BusinessRuleValidationError,
+  OrderBusinessRuleError,
+  OrderTypeBusinessRuleError,
+  ProductBusinessRuleError,
+  getErrorCode,
+  type BusinessRuleErrorCode,
 } from './errors';
 
 // Main validation functions for easy import
 export {
-  validateProductAttributeBusinessRules, validateProductBusinessRules, validateProductDeletionBusinessRules,
+  validateProductAttributeBusinessRules,
+  validateProductBusinessRules,
+  validateProductDeletionBusinessRules,
   validateProductSKUBusinessRules,
-  validateProductUpdateBusinessRules, validateProductVariantBusinessRules
+  validateProductUpdateBusinessRules,
+  validateProductVariantBusinessRules,
 } from './product-rules';
 
 export {
-  validateOrderBusinessRules, validateOrderCreationBusinessRules, validateOrderDeletionBusinessRules, validateOrderItemsBusinessRules, validateOrderUpdateBusinessRules, validateSingleProductConstraint
+  validateOrderBusinessRules,
+  validateOrderCreationBusinessRules,
+  validateOrderDeletionBusinessRules,
+  validateOrderItemsBusinessRules,
+  validateOrderUpdateBusinessRules,
+  validateSingleProductConstraint,
 } from './order-rules';
 
 export {
-  getOrderTypeRules, getOrderTypeRulesDescription, validateOrderForOrderType, validateOrderTypeProductSupport, validateProductForOrderType, validateVariableProductSupport
+  getOrderTypeRules,
+  getOrderTypeRulesDescription,
+  validateOrderForOrderType,
+  validateOrderTypeProductSupport,
+  validateProductForOrderType,
+  validateVariableProductSupport,
 } from './order-type-rules';
 
 export {
   combineValidationResults,
-  createErrorResult, createSuccessResult, createWarningResult, validateDateSequence, validateEmailFormat, validatePositiveNumber, validateRequiredFields,
-  validateStringLength, validateUniqueness
+  createErrorResult,
+  createSuccessResult,
+  createWarningResult,
+  validateDateSequence,
+  validateEmailFormat,
+  validatePositiveNumber,
+  validateRequiredFields,
+  validateStringLength,
+  validateUniqueness,
 } from './validation';
-

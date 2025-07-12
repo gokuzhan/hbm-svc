@@ -5,7 +5,7 @@ process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test';
 
 // Mock the database connection
 jest.mock('@/lib/db/connection', () => ({
-  db: {}
+  db: {},
 }));
 
 // Mock the schema completely to avoid relations issues
@@ -22,13 +22,13 @@ jest.mock('@/lib/db/schema', () => ({
   permissionsRelations: {},
   rolePermissionsRelations: {},
   userRolesRelations: {},
-  mediaRelations: {}
+  mediaRelations: {},
 }));
 
 // Mock bcryptjs
 jest.mock('bcryptjs', () => ({
   hash: jest.fn().mockResolvedValue('hashedPassword123'),
-  compare: jest.fn().mockResolvedValue(true)
+  compare: jest.fn().mockResolvedValue(true),
 }));
 
 // Mock drizzle-orm functions including relations
@@ -40,7 +40,7 @@ jest.mock('drizzle-orm', () => ({
   asc: jest.fn(),
   desc: jest.fn(),
   count: jest.fn(),
-  relations: jest.fn(() => ({}))
+  relations: jest.fn(() => ({})),
 }));
 
 describe('UserRepository', () => {

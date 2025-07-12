@@ -116,7 +116,11 @@ export class ProductService extends BaseServiceWithAuth<Product> {
     };
 
     // Validate business rules
-    const businessRuleValidation = validateProductBusinessRules(productForValidation, orderType, true);
+    const businessRuleValidation = validateProductBusinessRules(
+      productForValidation,
+      orderType,
+      true
+    );
     if (!businessRuleValidation.isValid) {
       throw new BusinessRuleValidationError(
         businessRuleValidation.errors,
@@ -128,11 +132,9 @@ export class ProductService extends BaseServiceWithAuth<Product> {
     // Validate SKU business rules
     const skuValidation = validateProductSKUBusinessRules(productData.sku);
     if (!skuValidation.isValid) {
-      throw new BusinessRuleValidationError(
-        skuValidation.errors,
-        skuValidation.warnings,
-        { sku: productData.sku }
-      );
+      throw new BusinessRuleValidationError(skuValidation.errors, skuValidation.warnings, {
+        sku: productData.sku,
+      });
     }
 
     const productToCreate = {
@@ -204,11 +206,10 @@ export class ProductService extends BaseServiceWithAuth<Product> {
     if (productData.sku && productData.sku !== existingProduct.sku) {
       const skuValidation = validateProductSKUBusinessRules(productData.sku);
       if (!skuValidation.isValid) {
-        throw new BusinessRuleValidationError(
-          skuValidation.errors,
-          skuValidation.warnings,
-          { sku: productData.sku, productId }
-        );
+        throw new BusinessRuleValidationError(skuValidation.errors, skuValidation.warnings, {
+          sku: productData.sku,
+          productId,
+        });
       }
 
       const skuExists = await this.productRepository.findBySku(productData.sku);
@@ -388,7 +389,7 @@ export class ProductService extends BaseServiceWithAuth<Product> {
         {
           productId: variantData.productId,
           variantName: variantData.name,
-          orderTypeName: orderType.name
+          orderTypeName: orderType.name,
         }
       );
     }
@@ -562,7 +563,11 @@ export class ProductService extends BaseServiceWithAuth<Product> {
         createdAt: result.createdAt || new Date(),
       };
     } catch (error) {
-      this.logServiceOperation('getOrderTypeById.error', { userId: 'system', userType: 'staff', permissions: [] }, { orderTypeId, error });
+      this.logServiceOperation(
+        'getOrderTypeById.error',
+        { userId: 'system', userType: 'staff', permissions: [] },
+        { orderTypeId, error }
+      );
       return null;
     }
   }

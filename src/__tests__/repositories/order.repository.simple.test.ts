@@ -5,7 +5,7 @@ process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test';
 
 // Mock the database connection
 jest.mock('@/lib/db/connection', () => ({
-  db: {}
+  db: {},
 }));
 
 // Mock the schema completely to avoid relations issues
@@ -32,7 +32,7 @@ jest.mock('@/lib/db/schema', () => ({
   rolesRelations: {},
   permissionsRelations: {},
   rolePermissionsRelations: {},
-  userRolesRelations: {}
+  userRolesRelations: {},
 }));
 
 // Mock drizzle-orm functions including relations
@@ -44,7 +44,7 @@ jest.mock('drizzle-orm', () => ({
   asc: jest.fn(),
   desc: jest.fn(),
   count: jest.fn(),
-  relations: jest.fn(() => ({}))
+  relations: jest.fn(() => ({})),
 }));
 
 describe('OrderRepository', () => {
@@ -89,7 +89,7 @@ describe('OrderRepository', () => {
         customerId: 'customer-123',
         completedAt: new Date(),
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       const status = await orderRepository.getOrderStatus(mockOrder);
@@ -102,7 +102,7 @@ describe('OrderRepository', () => {
         orderNumber: 'TEST-001',
         customerId: 'customer-123',
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       const status = await orderRepository.getOrderStatus(mockOrder);
@@ -120,7 +120,7 @@ describe('OrderRepository', () => {
         completedAt: new Date(),
         shippedAt: new Date(),
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       const status = await orderRepository.getOrderStatus(mockOrder);
@@ -134,7 +134,7 @@ describe('OrderRepository', () => {
         customerId: 'customer-123',
         canceledAt: new Date(),
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       const status = await orderRepository.getOrderStatus(mockOrder);

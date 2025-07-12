@@ -6,11 +6,7 @@ export class BusinessRuleValidationError extends Error {
   public readonly warnings: string[];
   public readonly context?: Record<string, unknown>;
 
-  constructor(
-    errors: string[],
-    warnings: string[] = [],
-    context?: Record<string, unknown>
-  ) {
+  constructor(errors: string[], warnings: string[] = [], context?: Record<string, unknown>) {
     const message = `Business rule validation failed: ${errors.join(', ')}`;
     super(message);
     this.name = 'BusinessRuleValidationError';
@@ -43,33 +39,21 @@ export class BusinessRuleValidationError extends Error {
 }
 
 export class OrderTypeBusinessRuleError extends BusinessRuleValidationError {
-  constructor(
-    errors: string[],
-    orderTypeName: string,
-    warnings: string[] = []
-  ) {
+  constructor(errors: string[], orderTypeName: string, warnings: string[] = []) {
     super(errors, warnings, { orderTypeName });
     this.name = 'OrderTypeBusinessRuleError';
   }
 }
 
 export class ProductBusinessRuleError extends BusinessRuleValidationError {
-  constructor(
-    errors: string[],
-    productId?: string,
-    warnings: string[] = []
-  ) {
+  constructor(errors: string[], productId?: string, warnings: string[] = []) {
     super(errors, warnings, { productId });
     this.name = 'ProductBusinessRuleError';
   }
 }
 
 export class OrderBusinessRuleError extends BusinessRuleValidationError {
-  constructor(
-    errors: string[],
-    orderId?: string,
-    warnings: string[] = []
-  ) {
+  constructor(errors: string[], orderId?: string, warnings: string[] = []) {
     super(errors, warnings, { orderId });
     this.name = 'OrderBusinessRuleError';
   }
@@ -110,7 +94,8 @@ export const BUSINESS_RULE_ERROR_CODES = {
   VALIDATION_UNIQUENESS: 'VALIDATION_UNIQUENESS',
 } as const;
 
-export type BusinessRuleErrorCode = typeof BUSINESS_RULE_ERROR_CODES[keyof typeof BUSINESS_RULE_ERROR_CODES];
+export type BusinessRuleErrorCode =
+  (typeof BUSINESS_RULE_ERROR_CODES)[keyof typeof BUSINESS_RULE_ERROR_CODES];
 
 /**
  * Maps error messages to standardized error codes
@@ -133,7 +118,10 @@ export function getErrorCode(errorMessage: string): BusinessRuleErrorCode | null
   }
 
   // Product Rules
-  if (lowercaseMessage.includes('variable products') && lowercaseMessage.includes('not supported')) {
+  if (
+    lowercaseMessage.includes('variable products') &&
+    lowercaseMessage.includes('not supported')
+  ) {
     return BUSINESS_RULE_ERROR_CODES.PRODUCT_VARIABLE_NOT_SUPPORTED;
   }
   if (lowercaseMessage.includes('name already exists')) {

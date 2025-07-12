@@ -3,10 +3,7 @@
 
 import { Order, OrderItem, OrderType } from '@/types';
 import { validateOrderForOrderType } from './order-type-rules';
-import {
-  BusinessRuleValidationResult,
-  OrderValidationContext
-} from './types';
+import { BusinessRuleValidationResult, OrderValidationContext } from './types';
 
 /**
  * Validates all order business rules
@@ -117,7 +114,9 @@ export function validateOrderItemsBusinessRules(
 /**
  * Validates single product constraint per order
  */
-export function validateSingleProductConstraint(orderItems: OrderItem[]): BusinessRuleValidationResult {
+export function validateSingleProductConstraint(
+  orderItems: OrderItem[]
+): BusinessRuleValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
 
@@ -127,8 +126,8 @@ export function validateSingleProductConstraint(orderItems: OrderItem[]): Busine
 
   // Extract product information from order items
   const productReferences = orderItems
-    .filter(item => item.productVariantId)
-    .map(item => item.productVariantId);
+    .filter((item) => item.productVariantId)
+    .map((item) => item.productVariantId);
 
   // Check for multiple different products
   if (productReferences.length > 0) {
@@ -231,9 +230,7 @@ export function validateOrderUpdateBusinessRules(
   }
 
   if (currentOrder.productionStartedAt && (updateData.orderTypeId || newOrderItems)) {
-    errors.push(
-      'Cannot modify order type or items for orders that have started production'
-    );
+    errors.push('Cannot modify order type or items for orders that have started production');
   }
 
   // Rule 3: New order items validation

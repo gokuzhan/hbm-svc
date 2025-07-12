@@ -5,7 +5,7 @@ process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test';
 
 // Mock the database connection
 jest.mock('../../lib/db/connection', () => ({
-  db: {}
+  db: {},
 }));
 
 describe('NotificationRepository', () => {

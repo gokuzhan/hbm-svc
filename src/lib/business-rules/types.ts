@@ -48,4 +48,4 @@ export const ORDER_TYPE_NAMES = {
   FABRIC: 'Fabric',
 } as const;
 
-export type OrderTypeName = typeof ORDER_TYPE_NAMES[keyof typeof ORDER_TYPE_NAMES];
+export type OrderTypeName = (typeof ORDER_TYPE_NAMES)[keyof typeof ORDER_TYPE_NAMES];

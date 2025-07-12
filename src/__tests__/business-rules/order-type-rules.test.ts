@@ -133,7 +133,8 @@ describe('Order Type Business Rules', () => {
 
       expect(result.isValid).toBe(true);
       expect(result.errors).toHaveLength(0);
-    }); it('should reject products for Private Label order type', () => {
+    });
+    it('should reject products for Private Label order type', () => {
       const result = validateOrderTypeProductSupport(mockPrivateLabelOrderType, true);
 
       expect(result.isValid).toBe(false);
@@ -183,7 +184,8 @@ describe('Order Type Business Rules', () => {
 
       expect(result.isValid).toBe(true);
       expect(result.errors).toHaveLength(0);
-    }); it('should validate variable product for White Label order type', () => {
+    });
+    it('should validate variable product for White Label order type', () => {
       const context = {
         product: mockVariableProduct,
         orderType: mockWhiteLabelOrderType,
@@ -283,7 +285,8 @@ describe('Order Type Business Rules', () => {
       expect(rules.name).toBe('Invalid Type');
       expect(rules.supportsProducts).toBe(false);
       expect(rules.supportsVariableProducts).toBe(false);
-    }); it('should validate simple product for valid order type', () => {
+    });
+    it('should validate simple product for valid order type', () => {
       const context = {
         product: mockVariableProduct,
         orderType: mockWhiteLabelOrderType,

@@ -6,7 +6,7 @@ import { validateProductForOrderType, validateVariableProductSupport } from './o
 import {
   BusinessRuleValidationResult,
   ProductAttributeValidationContext,
-  ProductValidationContext
+  ProductValidationContext,
 } from './types';
 
 /**

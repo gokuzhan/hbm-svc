@@ -43,14 +43,14 @@ export class ProductRepository extends BaseService<Product> {
       updatedAt: dbProduct.updatedAt,
       orderType: dbProduct.orderType
         ? {
-          id: dbProduct.orderType.id,
-          name: dbProduct.orderType.name,
-          description: dbProduct.orderType.description || undefined,
-          isActive: dbProduct.orderType.isActive ?? true,
-          supportsProducts: dbProduct.orderType.supportsProducts ?? true,
-          supportsVariableProducts: dbProduct.orderType.supportsVariableProducts ?? false,
-          createdAt: dbProduct.orderType.createdAt,
-        }
+            id: dbProduct.orderType.id,
+            name: dbProduct.orderType.name,
+            description: dbProduct.orderType.description || undefined,
+            isActive: dbProduct.orderType.isActive ?? true,
+            supportsProducts: dbProduct.orderType.supportsProducts ?? true,
+            supportsVariableProducts: dbProduct.orderType.supportsVariableProducts ?? false,
+            createdAt: dbProduct.orderType.createdAt,
+          }
         : undefined,
     };
   }

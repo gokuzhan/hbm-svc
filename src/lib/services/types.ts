@@ -1,3 +1,14 @@
+// Utility to map AuthContext (from middleware) to ServiceContext (for services)
+import type { AuthContext } from '@/lib/rbac/middleware';
+
+export function mapAuthContextToServiceContext(auth: AuthContext): ServiceContext {
+  return {
+    userId: auth.user.id,
+    userType: auth.user.userType,
+    permissions: auth.user.permissions,
+    role: auth.user.role ?? null,
+  };
+}
 // Service Layer Types and Interfaces
 // NOTE: Migrating to unified error handling system
 

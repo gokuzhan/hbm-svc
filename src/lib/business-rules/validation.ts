@@ -12,7 +12,7 @@ export function combineValidationResults(
   const allErrors: string[] = [];
   const allWarnings: string[] = [];
 
-  results.forEach(result => {
+  results.forEach((result) => {
     allErrors.push(...result.errors);
     allWarnings.push(...result.warnings);
   });
@@ -66,7 +66,7 @@ export function validateRequiredFields(
 ): BusinessRuleValidationResult {
   const errors: string[] = [];
 
-  requiredFields.forEach(field => {
+  requiredFields.forEach((field) => {
     const value = data[field];
     if (value === undefined || value === null || value === '') {
       errors.push(`${field} is required`);
@@ -136,7 +136,10 @@ export function validatePositiveNumber(
 /**
  * Validates email format
  */
-export function validateEmailFormat(email: string, fieldName: string = 'Email'): BusinessRuleValidationResult {
+export function validateEmailFormat(
+  email: string,
+  fieldName: string = 'Email'
+): BusinessRuleValidationResult {
   const errors: string[] = [];
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -168,7 +171,7 @@ export function validateDateSequence(
   });
 
   // Check date sequence
-  const validDates = dates.filter(d => d.date !== null) as Array<{ name: string; date: Date }>;
+  const validDates = dates.filter((d) => d.date !== null) as Array<{ name: string; date: Date }>;
 
   for (let i = 1; i < validDates.length; i++) {
     if (validDates[i].date < validDates[i - 1].date) {
@@ -197,7 +200,7 @@ export function validateUniqueness<T>(
   const seen = new Set<string>();
   const duplicates = new Set<string>();
 
-  items.forEach(item => {
+  items.forEach((item) => {
     const key = keyExtractor(item);
     if (seen.has(key)) {
       duplicates.add(key);
@@ -207,7 +210,7 @@ export function validateUniqueness<T>(
   });
 
   if (duplicates.size > 0) {
-    duplicates.forEach(duplicate => {
+    duplicates.forEach((duplicate) => {
       errors.push(`${errorMessage}: ${duplicate}`);
     });
   }

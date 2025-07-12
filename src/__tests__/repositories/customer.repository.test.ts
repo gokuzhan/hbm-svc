@@ -4,7 +4,13 @@ import { CustomerRepository } from '@/lib/repositories/customer.repository';
 jest.mock('@/lib/db', () => ({ db: {} }));
 jest.mock('@/lib/db/schema', () => ({ customers: {} }));
 jest.mock('drizzle-orm', () => ({
-  eq: jest.fn(), and: jest.fn(), or: jest.fn(), like: jest.fn(), asc: jest.fn(), desc: jest.fn(), count: jest.fn()
+  eq: jest.fn(),
+  and: jest.fn(),
+  or: jest.fn(),
+  like: jest.fn(),
+  asc: jest.fn(),
+  desc: jest.fn(),
+  count: jest.fn(),
 }));
 
 describe('CustomerRepository', () => {

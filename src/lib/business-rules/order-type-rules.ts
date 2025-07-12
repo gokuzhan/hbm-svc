@@ -8,7 +8,7 @@ import {
   OrderTypeBusinessRules,
   OrderTypeName,
   OrderValidationContext,
-  ProductValidationContext
+  ProductValidationContext,
 } from './types';
 
 /**
@@ -63,7 +63,9 @@ export function getOrderTypeRules(orderType: OrderType): OrderTypeBusinessRules 
 /**
  * Validates product business rules for an order type
  */
-export function validateProductForOrderType(context: ProductValidationContext): BusinessRuleValidationResult {
+export function validateProductForOrderType(
+  context: ProductValidationContext
+): BusinessRuleValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
   const rules = getOrderTypeRules(context.orderType);
@@ -77,16 +79,12 @@ export function validateProductForOrderType(context: ProductValidationContext): 
 
   // Rule 2: Variable products only allowed for order types with supports_variable_products = true
   if (context.product?.isVariable && !context.orderType.supportsVariableProducts) {
-    errors.push(
-      `Variable products are not supported for order type: ${context.orderType.name}`
-    );
+    errors.push(`Variable products are not supported for order type: ${context.orderType.name}`);
   }
 
   // Rule 3: Products must be associated with order types that support products
   if (context.product && !rules.allowsProductAssociation) {
-    errors.push(
-      `Order type ${context.orderType.name} does not support product associations`
-    );
+    errors.push(`Order type ${context.orderType.name} does not support product associations`);
   }
 
   return {
@@ -99,35 +97,42 @@ export function validateProductForOrderType(context: ProductValidationContext): 
 /**
  * Validates order business rules for an order type
  */
-export function validateOrderForOrderType(context: OrderValidationContext): BusinessRuleValidationResult {
+export function validateOrderForOrderType(
+  context: OrderValidationContext
+): BusinessRuleValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
   const rules = getOrderTypeRules(context.orderType);
 
   // Rule 1: White Label orders must have product/variant associations
   if (context.orderType.name === ORDER_TYPE_NAMES.WHITE_LABEL) {
-    if (rules.requiresProductAssociation && (!context.orderItems || context.orderItems.length === 0)) {
+    if (
+      rules.requiresProductAssociation &&
+      (!context.orderItems || context.orderItems.length === 0)
+    ) {
       errors.push(`${ORDER_TYPE_NAMES.WHITE_LABEL} orders must have product associations`);
     }
 
     if (rules.requiresVariantAssociation && context.orderItems) {
-      const itemsWithoutVariants = context.orderItems.filter(item => !item.productVariantId);
+      const itemsWithoutVariants = context.orderItems.filter((item) => !item.productVariantId);
       if (itemsWithoutVariants.length > 0) {
-        errors.push(`${ORDER_TYPE_NAMES.WHITE_LABEL} orders must have product variant associations for all items`);
+        errors.push(
+          `${ORDER_TYPE_NAMES.WHITE_LABEL} orders must have product variant associations for all items`
+        );
       }
     }
   }
 
   // Rule 2: Private Label orders cannot have product associations
   if (context.orderType.name === ORDER_TYPE_NAMES.PRIVATE_LABEL) {
-    if (context.orderItems && context.orderItems.some(item => item.productVariantId)) {
+    if (context.orderItems && context.orderItems.some((item) => item.productVariantId)) {
       errors.push(`${ORDER_TYPE_NAMES.PRIVATE_LABEL} orders cannot have product associations`);
     }
   }
 
   // Rule 3: Fabric orders can have products but not variants
   if (context.orderType.name === ORDER_TYPE_NAMES.FABRIC) {
-    if (context.orderItems && context.orderItems.some(item => item.productVariantId)) {
+    if (context.orderItems && context.orderItems.some((item) => item.productVariantId)) {
       errors.push(`${ORDER_TYPE_NAMES.FABRIC} orders cannot have product variant associations`);
     }
   }
@@ -137,8 +142,8 @@ export function validateOrderForOrderType(context: OrderValidationContext): Busi
     // Check if multiple different products are referenced
     const uniqueProducts = new Set(
       context.orderItems
-        .filter(item => item.productVariantId)
-        .map(item => item.productVariantId)
+        .filter((item) => item.productVariantId)
+        .map((item) => item.productVariantId)
     );
 
     if (uniqueProducts.size > 1) {
@@ -156,7 +161,10 @@ export function validateOrderForOrderType(context: OrderValidationContext): Busi
 /**
  * Validates that an order type supports variable products
  */
-export function validateVariableProductSupport(orderType: OrderType, isVariable: boolean): BusinessRuleValidationResult {
+export function validateVariableProductSupport(
+  orderType: OrderType,
+  isVariable: boolean
+): BusinessRuleValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
 
@@ -176,21 +184,20 @@ export function validateVariableProductSupport(orderType: OrderType, isVariable:
 /**
  * Validates order type compatibility with product associations
  */
-export function validateOrderTypeProductSupport(orderType: OrderType, hasProducts: boolean): BusinessRuleValidationResult {
+export function validateOrderTypeProductSupport(
+  orderType: OrderType,
+  hasProducts: boolean
+): BusinessRuleValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
   const rules = getOrderTypeRules(orderType);
 
   if (hasProducts && !rules.allowsProductAssociation) {
-    errors.push(
-      `Order type '${orderType.name}' does not support product associations`
-    );
+    errors.push(`Order type '${orderType.name}' does not support product associations`);
   }
 
   if (!hasProducts && rules.requiresProductAssociation) {
-    errors.push(
-      `Order type '${orderType.name}' requires product associations`
-    );
+    errors.push(`Order type '${orderType.name}' requires product associations`);
   }
 
   return {

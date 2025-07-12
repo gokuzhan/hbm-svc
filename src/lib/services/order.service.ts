@@ -5,7 +5,7 @@ import {
   BusinessRuleValidationError,
   validateOrderCreationBusinessRules,
   validateOrderItemsBusinessRules,
-  validateOrderUpdateBusinessRules
+  validateOrderUpdateBusinessRules,
 } from '@/lib/business-rules';
 import { PaginatedResult, QueryOptions } from '@/lib/dal/base';
 import { CustomerRepository } from '@/lib/repositories/customer.repository';
@@ -106,11 +106,14 @@ export class OrderService extends BaseServiceWithAuth<Order> {
     // Validate business rules for order creation
     try {
       if (orderType) {
-        await validateOrderCreationBusinessRules({
-          customerId: orderData.customerId,
-          orderTypeId: orderData.orderTypeId,
-          items: orderData.items,
-        }, orderType);
+        await validateOrderCreationBusinessRules(
+          {
+            customerId: orderData.customerId,
+            orderTypeId: orderData.orderTypeId,
+            items: orderData.items,
+          },
+          orderType
+        );
       }
 
       // Validate business rules for order items
@@ -408,7 +411,6 @@ export class OrderService extends BaseServiceWithAuth<Order> {
     console.log('Validate update:', context, id, data); // Placeholder to avoid unused variable warning
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected async validateDelete(_context: ServiceContext, _id: string): Promise<void> {
     throw new ValidationError('Orders cannot be deleted, only canceled');
   }
@@ -559,7 +561,7 @@ export class OrderService extends BaseServiceWithAuth<Order> {
       const logContext: ServiceContext = {
         userId: 'system',
         userType: 'staff',
-        permissions: []
+        permissions: [],
       };
       this.logServiceOperation('getOrderTypeById.error', logContext, { orderTypeId, error });
       return null;
