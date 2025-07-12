@@ -19,6 +19,7 @@ export function computeOrderStatus(orderData: OrderStatusData): StatusComputatio
 
   // Check canceled status first (highest priority)
   if (orderData.canceledAt) {
+    factors.push('canceled_at is set');
     factors.push('Order has been canceled');
     return {
       status: OrderStatus.CANCELED,
@@ -31,6 +32,7 @@ export function computeOrderStatus(orderData: OrderStatusData): StatusComputatio
 
   // Check delivered status
   if (orderData.deliveredAt) {
+    factors.push('delivered_at is set');
     factors.push('Order has been delivered');
     return {
       status: OrderStatus.DELIVERED,
@@ -43,6 +45,7 @@ export function computeOrderStatus(orderData: OrderStatusData): StatusComputatio
 
   // Check shipped status
   if (orderData.shippedAt) {
+    factors.push('shipped_at is set');
     factors.push('Order has been shipped');
     return {
       status: OrderStatus.SHIPPED,
@@ -55,6 +58,7 @@ export function computeOrderStatus(orderData: OrderStatusData): StatusComputatio
 
   // Check completed status
   if (orderData.completedAt) {
+    factors.push('completed_at is set');
     factors.push('Order has been completed');
     return {
       status: OrderStatus.COMPLETED,
@@ -68,9 +72,11 @@ export function computeOrderStatus(orderData: OrderStatusData): StatusComputatio
   // Check production status (triggered by production_started_at OR production_stage_id)
   if (orderData.productionStartedAt || orderData.productionStageId) {
     if (orderData.productionStartedAt) {
+      factors.push('production_started_at is set');
       factors.push('Production has started');
     }
     if (orderData.productionStageId) {
+      factors.push('production_stage_id is set');
       factors.push('Order assigned to production stage');
     }
     return {
@@ -84,6 +90,7 @@ export function computeOrderStatus(orderData: OrderStatusData): StatusComputatio
 
   // Check confirmed status
   if (orderData.confirmedAt) {
+    factors.push('confirmed_at is set');
     factors.push('Order has been confirmed');
     return {
       status: OrderStatus.CONFIRMED,
@@ -104,6 +111,7 @@ export function computeOrderStatus(orderData: OrderStatusData): StatusComputatio
       const expiredQuotations = activeQuotations.filter((q) => q.validUntil < now);
 
       if (expiredQuotations.length > 0) {
+        factors.push('active quotation is expired');
         factors.push('Quotation has expired');
         return {
           status: OrderStatus.EXPIRED,
@@ -113,6 +121,7 @@ export function computeOrderStatus(orderData: OrderStatusData): StatusComputatio
           canTransitionTo: OrderStatusTransitions[OrderStatus.EXPIRED],
         };
       } else {
+        factors.push('active quotation exists');
         factors.push('Order has active quotation');
         return {
           status: OrderStatus.QUOTED,
@@ -138,6 +147,7 @@ export function computeOrderStatus(orderData: OrderStatusData): StatusComputatio
   }
 
   // Default status - requested
+  factors.push('default status');
   factors.push('Order is in initial requested state');
   return {
     status: OrderStatus.REQUESTED,
@@ -201,10 +211,10 @@ export function validateOrderStatusData(orderData: OrderStatusData): string[] {
 
   // Basic required fields
   if (!orderData.id) {
-    errors.push('Order ID is required');
+    errors.push('Order id is required');
   }
   if (!orderData.orderNumber) {
-    errors.push('Order number is required');
+    errors.push('Order orderNumber is required');
   }
   if (!orderData.createdAt) {
     errors.push('Order creation date is required');
@@ -216,7 +226,7 @@ export function validateOrderStatusData(orderData: OrderStatusData): string[] {
   }
 
   if (orderData.confirmedAt && orderData.quotedAt && orderData.confirmedAt < orderData.quotedAt) {
-    errors.push('Confirmed date cannot be before quoted date');
+    errors.push('confirmed_at must be after quoted_at');
   }
 
   if (

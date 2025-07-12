@@ -1,3 +1,13 @@
+// Polyfill setImmediate for winston
+if (typeof setImmediate === 'undefined') {
+  global.setImmediate = ((
+    fn: (...args: unknown[]) => void,
+    ...args: unknown[]
+  ): NodeJS.Immediate => {
+    return setTimeout(fn, 0, ...args) as unknown as NodeJS.Immediate;
+  }) as typeof setImmediate;
+}
+
 import { UserRepository } from '@/lib/repositories/user.repository';
 import { User } from '@/types';
 

@@ -137,7 +137,7 @@ describe('Status History Management', () => {
 
     it('should calculate status change statistics', () => {
       const startDate = new Date('2024-01-01');
-      const endDate = new Date('2024-12-31');
+      const endDate = new Date('2026-12-31'); // Updated to include current date
 
       statusHistory.recordStatusChange('order', 'order-1', null, 'requested');
       statusHistory.recordStatusChange('order', 'order-1', 'requested', 'quoted');

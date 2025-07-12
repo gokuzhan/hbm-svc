@@ -1,6 +1,64 @@
 // Unified Error Handling Tests
 // HBM Service - Comprehensive test suite for error handling system
 
+// Mock Next.js server dependencies before importing
+jest.mock('next/server', () => {
+  class MockHeaders {
+    private headers: Map<string, string> = new Map();
+
+    set(key: string, value: string) {
+      this.headers.set(key, value);
+    }
+
+    get(key: string) {
+      return this.headers.get(key);
+    }
+  }
+
+  return {
+    NextRequest: jest.fn().mockImplementation((url, init) => ({
+      url,
+      method: init?.method || 'GET',
+      headers: new Map(Object.entries(init?.headers || {})),
+      nextUrl: new URL(url),
+    })),
+    NextResponse: {
+      json: jest.fn().mockImplementation((data, init) => {
+        const headers = new MockHeaders();
+        if (init?.headers) {
+          Object.entries(init.headers).forEach(([key, value]) => {
+            headers.set(key, String(value));
+          });
+        }
+        return {
+          status: init?.status || 200,
+          headers,
+          json: () => Promise.resolve(data),
+        };
+      }),
+    },
+  };
+});
+
+// Mock logger to prevent winston issues
+jest.mock('@/lib/api/logger', () => ({
+  logger: {
+    warn: jest.fn(),
+    error: jest.fn(),
+    info: jest.fn(),
+  },
+}));
+
+// Mock crypto for Node.js environment
+global.crypto = {
+  randomUUID: () => 'test-uuid-12345',
+} as typeof crypto;
+
+// Polyfill setImmediate for Winston
+global.setImmediate =
+  global.setImmediate ||
+  ((fn: (...args: unknown[]) => void, ...args: unknown[]) => setTimeout(fn, 0, ...args));
+
 import { NextRequest, NextResponse } from 'next/server';
 import { ZodError, ZodIssue } from 'zod';
 import {

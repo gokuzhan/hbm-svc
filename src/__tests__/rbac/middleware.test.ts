@@ -1,5 +1,35 @@
 // RBAC Middleware Tests
 
+// Mock Next.js server dependencies before importing
+jest.mock('next/server', () => ({
+  NextRequest: jest.fn(),
+  NextResponse: {
+    json: jest.fn(),
+    redirect: jest.fn(),
+  },
+}));
+
+jest.mock('next-auth', () => ({
+  getServerSession: jest.fn(),
+}));
+
+jest.mock('@/lib/auth/config', () => ({
+  authOptions: {},
+}));
+
+jest.mock('@/lib/api/logger', () => ({
+  logger: {
+    error: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+  },
+}));
+
+jest.mock('@/lib/errors/error-handler', () => ({
+  throwPermissionError: jest.fn(),
+  withErrorHandling: jest.fn(),
+}));
+
 import { canAccessCustomerData, hasPermission, hasResourcePermission } from '@/lib/rbac/middleware';
 import { ACTIONS, RESOURCES } from '@/lib/rbac/permissions';
 

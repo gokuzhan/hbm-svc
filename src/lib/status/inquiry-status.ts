@@ -36,6 +36,7 @@ export function computeInquiryStatus(inquiryData: InquiryStatusData): StatusComp
   // Add factors based on status and supporting fields
   switch (status) {
     case InquiryStatus.REJECTED:
+      factors.push(`status field value: ${status} (rejected)`);
       factors.push('Inquiry has been rejected');
       if (inquiryData.rejectedAt) {
         factors.push(`Rejected on ${inquiryData.rejectedAt.toISOString()}`);
@@ -43,17 +44,21 @@ export function computeInquiryStatus(inquiryData: InquiryStatusData): StatusComp
       break;
 
     case InquiryStatus.NEW:
+      factors.push(`status field value: ${status} (new)`);
       factors.push('Inquiry is in new state');
       break;
 
     case InquiryStatus.ACCEPTED:
+      factors.push(`status field value: ${status} (accepted)`);
       factors.push('Inquiry has been accepted');
       if (inquiryData.acceptedAt) {
+        factors.push(`accepted_at is set`);
         factors.push(`Accepted on ${inquiryData.acceptedAt.toISOString()}`);
       }
       break;
 
     case InquiryStatus.IN_PROGRESS:
+      factors.push(`status field value: ${status} (in_progress)`);
       factors.push('Inquiry is being processed');
       if (inquiryData.acceptedAt) {
         factors.push('Previously accepted and now in progress');
@@ -61,6 +66,7 @@ export function computeInquiryStatus(inquiryData: InquiryStatusData): StatusComp
       break;
 
     case InquiryStatus.CLOSED:
+      factors.push(`status field value: ${status} (closed)`);
       factors.push('Inquiry has been closed');
       if (inquiryData.closedAt) {
         factors.push(`Closed on ${inquiryData.closedAt.toISOString()}`);
@@ -132,7 +138,7 @@ export function validateInquiryStatusData(inquiryData: InquiryStatusData): strin
 
   // Basic required fields
   if (!inquiryData.id) {
-    errors.push('Inquiry ID is required');
+    errors.push('Inquiry id is required');
   }
   if (!inquiryData.createdAt) {
     errors.push('Inquiry creation date is required');
@@ -143,7 +149,7 @@ export function validateInquiryStatusData(inquiryData: InquiryStatusData): strin
 
   // Status range validation
   if (inquiryData.status < 0 || inquiryData.status > 4) {
-    errors.push('Inquiry status must be between 0 and 4');
+    errors.push('status must be between 0 and 4');
   }
 
   // Date consistency validation
@@ -175,7 +181,7 @@ export function validateInquiryStatusData(inquiryData: InquiryStatusData): strin
   const status = inquiryData.status as InquiryStatus;
 
   if (status === InquiryStatus.ACCEPTED && !inquiryData.acceptedAt) {
-    errors.push('Accepted status requires acceptedAt date');
+    errors.push('accepted_at should be set for accepted status');
   }
 
   if (status === InquiryStatus.REJECTED && !inquiryData.rejectedAt) {

@@ -1,3 +1,13 @@
+// Polyfill setImmediate for winston
+if (typeof setImmediate === 'undefined') {
+  global.setImmediate = ((
+    fn: (...args: unknown[]) => void,
+    ...args: unknown[]
+  ): NodeJS.Immediate => {
+    return setTimeout(fn, 0, ...args) as unknown as NodeJS.Immediate;
+  }) as typeof setImmediate;
+}
+
 import { ACTIONS } from '@/constants';
 import { BaseService as RepositoryBaseService } from '@/lib/dal/base';
 import { BaseServiceWithAuth } from '../../lib/services/base.service';
@@ -225,7 +235,7 @@ describe('BaseServiceWithAuth', () => {
         mockRepository.findById.mockResolvedValue(null);
 
         await expect(service.update(mockContext, 'nonexistent', {})).rejects.toThrow(
-          'test-resource with id nonexistent not found'
+          "test-resource with id 'nonexistent' not found"
         );
         expect(mockRepository.update).not.toHaveBeenCalled();
       });
