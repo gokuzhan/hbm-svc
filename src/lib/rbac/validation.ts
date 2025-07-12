@@ -7,7 +7,7 @@ import { hasAllPermissions, hasAnyPermissions } from './utils';
 /**
  * Authentication context for service operations
  */
-export interface AuthContext {
+export interface ServiceAuthContext {
   userId: string;
   userType: 'staff' | 'customer';
   role: string;
@@ -27,8 +27,8 @@ export interface PermissionValidationOptions {
  * Validate user authentication
  */
 export function validateAuthentication(
-  context: AuthContext | null
-): asserts context is AuthContext {
+  context: ServiceAuthContext | null
+): asserts context is ServiceAuthContext {
   if (!context || !context.userId) {
     throw new AuthenticationError('Authentication required');
   }
@@ -38,7 +38,7 @@ export function validateAuthentication(
  * Validate user permissions for service operations
  */
 export function validatePermissions(
-  context: AuthContext,
+  context: ServiceAuthContext,
   requiredPermissions: string | string[],
   options: PermissionValidationOptions = {}
 ): boolean {
@@ -71,7 +71,7 @@ export function validatePermissions(
  * Check if user can perform action on resource
  */
 export function validateResourceAction(
-  context: AuthContext,
+  context: ServiceAuthContext,
   resource: string,
   action: string,
   options: PermissionValidationOptions = {}
@@ -87,7 +87,7 @@ export function validateResourceAction(
  * Check if user has role-based access
  */
 export function validateRole(
-  context: AuthContext,
+  context: ServiceAuthContext,
   requiredRoles: string | string[],
   options: Omit<PermissionValidationOptions, 'requireAll'> = {}
 ): boolean {
@@ -113,7 +113,7 @@ export function validateRole(
  * Check if user is staff member
  */
 export function validateStaffAccess(
-  context: AuthContext,
+  context: ServiceAuthContext,
   options: Omit<PermissionValidationOptions, 'requireAll'> = {}
 ): boolean {
   const { throwOnFailure = true, context: operationContext } = options;
@@ -138,7 +138,7 @@ export function validateStaffAccess(
  * Check if user is customer
  */
 export function validateCustomerAccess(
-  context: AuthContext,
+  context: ServiceAuthContext,
   options: Omit<PermissionValidationOptions, 'requireAll'> = {}
 ): boolean {
   const { throwOnFailure = true, context: operationContext } = options;
@@ -167,7 +167,7 @@ export function createAuthContext(user: {
   userType: 'staff' | 'customer';
   role: string;
   permissions?: string[];
-}): AuthContext {
+}): ServiceAuthContext {
   const permissions =
     user.permissions ||
     DEFAULT_ROLE_PERMISSIONS[user.role as keyof typeof DEFAULT_ROLE_PERMISSIONS] ||
@@ -191,7 +191,7 @@ export function requiresPermissions(
   return function (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
 
-    descriptor.value = function (context: AuthContext, ...args: unknown[]) {
+    descriptor.value = function (context: ServiceAuthContext, ...args: unknown[]) {
       validatePermissions(context, permissions, {
         context: `${target?.constructor.name}.${propertyKey}`,
         ...options,
@@ -213,7 +213,7 @@ export function requiresRole(
   return function (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
 
-    descriptor.value = function (context: AuthContext, ...args: unknown[]) {
+    descriptor.value = function (context: ServiceAuthContext, ...args: unknown[]) {
       validateRole(context, roles, {
         context: `${target?.constructor.name}.${propertyKey}`,
         ...options,
@@ -232,7 +232,7 @@ export function requiresStaffAccess(options: Omit<PermissionValidationOptions, '
   return function (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
 
-    descriptor.value = function (context: AuthContext, ...args: unknown[]) {
+    descriptor.value = function (context: ServiceAuthContext, ...args: unknown[]) {
       validateStaffAccess(context, {
         context: `${target?.constructor.name}.${propertyKey}`,
         ...options,
@@ -253,7 +253,7 @@ export function requiresCustomerAccess(
   return function (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
 
-    descriptor.value = function (context: AuthContext, ...args: unknown[]) {
+    descriptor.value = function (context: ServiceAuthContext, ...args: unknown[]) {
       validateCustomerAccess(context, {
         context: `${target?.constructor.name}.${propertyKey}`,
         ...options,

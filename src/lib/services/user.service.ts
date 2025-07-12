@@ -301,18 +301,22 @@ export class UserService extends BaseServiceWithAuth<User> {
     // Additional business logic for user deletion
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected async checkCustomerAccess(_context: ServiceContext, _entity: User): Promise<boolean> {
     // Customers cannot access user records
+    // Parameters are intentionally unused as customers have no access
+    void _context;
+    void _entity;
     return false;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected async applyCustomerFilters(
     _context: ServiceContext,
     _options?: QueryOptions
   ): Promise<QueryOptions | undefined> {
     // Customers cannot list users
+    // Parameters are intentionally unused as customers have no access
+    void _context;
+    void _options;
     throw new PermissionError('Customers cannot access user records');
   }
 

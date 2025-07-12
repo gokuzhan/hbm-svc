@@ -124,9 +124,9 @@ export function comparePermissions(
 }
 
 /**
- * Validate a set of permissions
+ * Validate a set of permissions format
  */
-export function validatePermissions(permissions: string[]): {
+export function validatePermissionFormat(permissions: string[]): {
   valid: string[];
   invalid: string[];
 } {

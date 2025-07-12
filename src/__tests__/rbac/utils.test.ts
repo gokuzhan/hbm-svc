@@ -12,7 +12,7 @@ import {
   hasAllPermissions,
   hasAnyPermissions,
   optimizePermissions,
-  validatePermissions,
+  validatePermissionFormat,
 } from '@/lib/rbac/utils';
 
 describe('RBAC Utils', () => {
@@ -107,9 +107,9 @@ describe('RBAC Utils', () => {
   });
 
   describe('Permission Validation', () => {
-    test('validatePermissions should separate valid and invalid permissions', () => {
+    test('validatePermissionFormat should separate valid and invalid permissions', () => {
       const permissions = ['users:read', 'invalid:permission', 'customers:create', 'superadmin'];
-      const result = validatePermissions(permissions);
+      const result = validatePermissionFormat(permissions);
 
       expect(result.valid).toContain('users:read');
       expect(result.valid).toContain('customers:create');

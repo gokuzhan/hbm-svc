@@ -9,25 +9,25 @@ import {
   validateResourceAction,
   validateRole,
   validateStaffAccess,
-  type AuthContext,
+  type ServiceAuthContext,
 } from '@/lib/rbac/validation';
 
 // Mock context for testing
-const mockContext: AuthContext = {
+const mockContext: ServiceAuthContext = {
   permissions: ['users:read', 'users:write', 'products:read'],
   role: 'admin',
   userId: 'user-123',
   userType: 'staff',
 };
 
-const mockStaffContext: AuthContext = {
+const mockStaffContext: ServiceAuthContext = {
   permissions: ['users:read', 'customers:read'],
   role: 'staff',
   userId: 'user-456',
   userType: 'staff',
 };
 
-const mockCustomerContext: AuthContext = {
+const mockCustomerContext: ServiceAuthContext = {
   permissions: ['inquiries:create'],
   role: 'customer',
   userId: 'customer-789',

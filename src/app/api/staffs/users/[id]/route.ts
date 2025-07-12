@@ -25,10 +25,11 @@ const updateUserSchema = z.object({
 async function handleGetUser(
   request: NextRequest,
   context: AuthContext,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = params.id;
+    const { id } = await params;
+    const userId = id;
 
     const userService = new UserService();
 
@@ -68,10 +69,11 @@ async function handleGetUser(
 async function handleUpdateUser(
   request: NextRequest,
   context: AuthContext,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = params.id;
+    const { id } = await params;
+    const userId = id;
     const body = await request.json();
     const validatedData = updateUserSchema.parse(body);
 
@@ -127,10 +129,11 @@ async function handleUpdateUser(
 async function handleDeleteUser(
   request: NextRequest,
   context: AuthContext,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = params.id;
+    const { id } = await params;
+    const userId = id;
 
     const userService = new UserService();
 
