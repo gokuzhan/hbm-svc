@@ -6,11 +6,12 @@
  */
 
 import { ALL_PERMISSIONS, DEFAULT_ROLE_PERMISSIONS } from '@/lib/rbac/permissions';
+import bcrypt from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 import { isProd } from '../env';
 import { testConnection } from './connection';
 import { db } from './index';
-import { permissions, rolePermissions, roles } from './schema';
+import { permissions, rolePermissions, roles, users } from './schema';
 
 /**
  * Seed permissions into the database
@@ -62,18 +63,6 @@ async function seedRoles() {
       description: 'Super Administrator with all permissions',
       isBuiltIn: true,
       permissions: DEFAULT_ROLE_PERMISSIONS.superadmin,
-    },
-    {
-      name: 'admin',
-      description: 'Administrator with management permissions',
-      isBuiltIn: true,
-      permissions: DEFAULT_ROLE_PERMISSIONS.admin,
-    },
-    {
-      name: 'staff',
-      description: 'Staff member with limited permissions',
-      isBuiltIn: true,
-      permissions: DEFAULT_ROLE_PERMISSIONS.staff,
     },
   ];
 
@@ -137,6 +126,63 @@ async function seedRoles() {
 }
 
 /**
+ * Seed default superadmin user
+ */
+async function seedSuperadmin() {
+  console.log('📊 Seeding default superadmin user...');
+
+  try {
+    // Check if superadmin role exists
+    const [superadminRole] = await db
+      .select()
+      .from(roles)
+      .where(eq(roles.name, 'superadmin'))
+      .limit(1);
+
+    if (!superadminRole) {
+      console.error('❌ Superadmin role not found. Please run role seeding first.');
+      return;
+    }
+
+    // Check if default admin user already exists
+    const existingAdmin = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, 'admin@huezo.in'))
+      .limit(1);
+
+    if (existingAdmin.length > 0) {
+      console.log('📋 Default superadmin user already exists: admin@huezo.in');
+      return;
+    }
+
+    // Hash the default password
+    const passwordHash = await bcrypt.hash('admin123', 12);
+
+    // Create the default superadmin user
+    const newUser = await db
+      .insert(users)
+      .values({
+        email: 'admin@huezo.in',
+        passwordHash,
+        firstName: 'Super',
+        lastName: 'Admin',
+        phone: null,
+        isActive: true,
+        roleId: superadminRole.id,
+      })
+      .returning();
+
+    console.log(`✅ Created default superadmin user: ${newUser[0].email}`);
+    console.log(`   Default credentials: admin@huezo.in / admin123`);
+    console.log(`   ⚠️  Please change the default password after first login!`);
+  } catch (error) {
+    console.error('❌ Failed to seed default superadmin user:', error);
+    throw error;
+  }
+}
+
+/**
  * Seed initial data into the database
  */
 async function seedDatabase() {
@@ -152,7 +198,8 @@ async function seedDatabase() {
     // Seed roles and permissions
     await seedRoles();
 
-    // TODO: Add other seeding logic here (users, customers, etc.)
+    // Seed default superadmin user
+    await seedSuperadmin();
 
     console.log('✅ Database seeding completed successfully');
   } catch (error) {

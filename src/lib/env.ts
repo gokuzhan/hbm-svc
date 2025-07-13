@@ -13,7 +13,7 @@ const envSchema = z.object({
   NEXTAUTH_URL: z.string().url().optional(),
 
   // App configuration
-  APP_URL: z.string().url().default('http://localhost:3000'),
+  APP_URL: z.url().default('http://localhost:3000'),
 
   // Email configuration
   EMAIL_HOST: z.string().optional(),
