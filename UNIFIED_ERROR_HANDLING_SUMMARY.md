@@ -104,7 +104,7 @@ src/__tests__/errors/
 
 #### **Example API Endpoint**
 
-- Refactored `src/app/api/staffs/users/route.ts` as reference implementation
+- Refactored `src/app/api/staff/users/route.ts` as reference implementation
 - Removed legacy try-catch blocks in favor of middleware handling
 - Clean, focused business logic without error handling boilerplate
 

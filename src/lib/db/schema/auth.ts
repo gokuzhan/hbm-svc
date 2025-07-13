@@ -11,6 +11,7 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
+import { customers } from './customers';
 import { media } from './media';
 
 // Users table for staff authentication
@@ -70,18 +71,30 @@ export const rolePermissions = pgTable(
   (table) => [primaryKey({ columns: [table.roleId, table.permissionId] })]
 );
 
-// Sessions table for NextAuth.js
-export const sessions = pgTable('sessions', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  expires: timestamp('expires', { withTimezone: true }).notNull(),
-  sessionToken: varchar('session_token', { length: 255 }).notNull().unique(),
-  accessToken: varchar('access_token', { length: 255 }),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
-});
+// Sessions table for JWT authentication (both web and API)
+export const sessions = pgTable(
+  'sessions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
+    customerId: uuid('customer_id').references(() => customers.id, { onDelete: 'cascade' }),
+    sessionId: uuid('session_id').notNull().unique(),
+    userType: varchar('user_type', { length: 10 }).notNull(), // 'staff' or 'customer'
+    deviceInfo: text('device_info'), // Optional: user agent, device name
+    ipAddress: varchar('ip_address', { length: 45 }), // IPv4/IPv6
+    isActive: boolean('is_active').default(true),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    lastUsedAt: timestamp('last_used_at', { withTimezone: true }).defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    index('idx_sessions_session_id').on(table.sessionId),
+    index('idx_sessions_user_id').on(table.userId),
+    index('idx_sessions_customer_id').on(table.customerId),
+    index('idx_sessions_expires').on(table.expiresAt),
+    index('idx_sessions_user_type').on(table.userType),
+  ]
+);
 
 // Relations
 export const usersRelations = relations(users, ({ one, many }) => ({
@@ -116,5 +129,9 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
   user: one(users, {
     fields: [sessions.userId],
     references: [users.id],
+  }),
+  customer: one(customers, {
+    fields: [sessions.customerId],
+    references: [customers.id],
   }),
 }));

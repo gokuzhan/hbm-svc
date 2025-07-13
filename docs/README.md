@@ -12,7 +12,12 @@ Welcome to the HBM (Huezo Business Management) Service Layer documentation.
 
 ### Technical Documentation
 
-- [API.md](API.md) - API documentation and endpoints _(coming soon)_
+- [API_INFRASTRUCTURE.md](API_INFRASTRUCTURE.md) - API infrastructure usage guide
+- [API_STATUS.md](API_STATUS.md) - Current API implementation status
+- [AUTHENTICATION.md](AUTHENTICATION.md) - Authentication system documentation
+- [RBAC_IMPLEMENTATION.md](RBAC_IMPLEMENTATION.md) - Role-based access control
+- [LAYERED_ARCHITECTURE.md](LAYERED_ARCHITECTURE.md) - Layered architecture implementation
+- [BUSINESS_RULES.md](BUSINESS_RULES.md) - Business rules and validation
 - [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture overview _(coming soon)_
 - [DEPLOYMENT.md](DEPLOYMENT.md) - Deployment guides _(coming soon)_
 
@@ -37,6 +42,13 @@ Welcome to the HBM (Huezo Business Management) Service Layer documentation.
 - [Migration Guide](DATABASE.md#migration-workflow)
 - [Connection Testing](DATABASE.md#testing--monitoring)
 - [Troubleshooting](DATABASE.md#troubleshooting)
+
+### For API Development
+
+- [API Infrastructure Guide](API_INFRASTRUCTURE.md) - Building robust API endpoints
+- [Authentication System](AUTHENTICATION.md) - Web and mobile authentication
+- [API Documentation](http://localhost:3000/api/docs) - Interactive API docs (dev server)
+- [OpenAPI Specification](http://localhost:3000/api/docs/openapi.json) - API spec
 
 ### For Project Management
 

@@ -1,6 +1,6 @@
 /**
  * @openapi
- * /api/staffs/roles:
+ * /api/staff/roles:
  *   get:
  *     summary: List all roles
  *     tags:

@@ -20,7 +20,7 @@ const listCustomersSchema = paginationSchema.extend({
 });
 
 /**
- * GET /api/staffs/customers - List customers with pagination and filtering
+ * GET /api/staff/customers - List customers with pagination and filtering
  */
 async function handleGetCustomers(request: NextRequest, context: AuthContext) {
   try {

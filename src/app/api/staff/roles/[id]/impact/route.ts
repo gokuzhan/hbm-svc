@@ -1,6 +1,6 @@
 /**
  * @openapi
- * /api/staffs/roles/{id}/impact:
+ * /api/staff/roles/{id}/impact:
  *   get:
  *     summary: Analyze the impact of role changes
  *     tags:

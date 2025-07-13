@@ -10,7 +10,7 @@ import { NextRequest } from 'next/server';
 import { z } from 'zod';
 
 /**
- * GET /api/staffs/inquiries - List inquiries with pagination and filtering
+ * GET /api/staff/inquiries - List inquiries with pagination and filtering
  */
 async function handleGetInquiries(request: NextRequest, context: AuthContext) {
   try {

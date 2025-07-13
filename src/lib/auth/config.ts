@@ -1,50 +1,21 @@
-// NextAuth.js Configuration for Dual Authentication System
-// Supports both staff and customer authentication with proper RBAC
+// NextAuth.js Configuration for Staff-Only Web Authentication
+// Following layered DAL architecture - uses AuthService instead of direct DB access
+//
+// ARCHITECTURE DECISION:
+// - NextAuth.js (Web App): Staff authentication only with manual session storage
+// - REST API (/api/auth/me/*): Both staff and customer authentication with JWT sessions
+// - Both use database session storage for proper logout and session management
+// - Customers use mobile apps/external integrations via JWT tokens
+// - Staff use the Next.js web management interface
 
-import { db } from '@/lib/db';
-import {
-  customerAuth,
-  customers,
-  permissions,
-  rolePermissions,
-  roles,
-  users,
-} from '@/lib/db/schema';
 import { env, isDev } from '@/lib/env';
-import bcrypt from 'bcryptjs';
-import { eq } from 'drizzle-orm';
+import { AuthService } from '@/lib/services/auth.service';
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { z } from 'zod';
 import './types'; // Import type extensions
 
-// Validation schemas for authentication
-const staffLoginSchema = z.object({
-  email: z.string().email('Invalid email format'),
-  password: z.string().min(1, 'Password is required'),
-  userType: z.literal('staff'),
-});
-
-const customerLoginSchema = z.object({
-  email: z.string().email('Invalid email format'),
-  password: z.string().min(1, 'Password is required'),
-  userType: z.literal('customer'),
-});
-
-// Helper function to get user permissions
-async function getUserPermissions(roleId: string) {
-  const userPermissions = await db
-    .select({
-      permission: permissions.name,
-      resource: permissions.resource,
-      action: permissions.action,
-    })
-    .from(rolePermissions)
-    .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
-    .where(eq(rolePermissions.roleId, roleId));
-
-  return userPermissions.map((p) => `${p.resource}:${p.action}`);
-}
+// Create shared AuthService instance
+const authService = new AuthService();
 
 export const authOptions: NextAuthOptions = {
   secret: env.NEXTAUTH_SECRET,
@@ -53,7 +24,7 @@ export const authOptions: NextAuthOptions = {
     maxAge: 24 * 60 * 60, // 24 hours
   },
   providers: [
-    // Staff Authentication Provider
+    // Staff Authentication Provider - Web app is staff-only
     CredentialsProvider({
       id: 'staff-credentials',
       name: 'Staff Login',
@@ -65,152 +36,57 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         try {
           if (!credentials) {
-            throw new Error('No credentials provided');
+            return null;
           }
 
-          // Validate input
-          const validatedFields = staffLoginSchema.parse(credentials);
-
-          // Find staff user with role information
-          const [staff] = await db
-            .select({
-              id: users.id,
-              email: users.email,
-              passwordHash: users.passwordHash,
-              firstName: users.firstName,
-              lastName: users.lastName,
-              isActive: users.isActive,
-              roleId: users.roleId,
-              roleName: roles.name,
-              roleDescription: roles.description,
-            })
-            .from(users)
-            .leftJoin(roles, eq(users.roleId, roles.id))
-            .where(eq(users.email, validatedFields.email))
-            .limit(1);
-
-          if (!staff || !staff.isActive) {
-            throw new Error('Invalid credentials or inactive account');
-          }
-
-          // Verify password
-          const passwordMatch = await bcrypt.compare(validatedFields.password, staff.passwordHash);
-          if (!passwordMatch) {
-            throw new Error('Invalid credentials');
-          }
-
-          // Get user permissions
-          const userPermissions = staff.roleId ? await getUserPermissions(staff.roleId) : [];
-
-          return {
-            id: staff.id,
-            email: staff.email,
-            name: `${staff.firstName} ${staff.lastName}`,
+          // Use AuthService for authentication (follows DAL architecture)
+          // Force userType to 'staff' since web app is staff-only
+          const user = await authService.authenticateForNextAuth({
+            email: credentials.email,
+            password: credentials.password,
             userType: 'staff',
-            role: staff.roleName || null,
-            roleId: staff.roleId || null,
-            permissions: userPermissions,
-          };
+          });
+
+          return user; // AuthService returns null for invalid credentials
         } catch (error) {
           console.error('Staff authentication error:', error);
           return null;
         }
       },
     }),
-
-    // Customer Authentication Provider
-    CredentialsProvider({
-      id: 'customer-credentials',
-      name: 'Customer Login',
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
-        userType: { label: 'User Type', type: 'hidden' },
-      },
-      async authorize(credentials) {
-        try {
-          if (!credentials) {
-            throw new Error('No credentials provided');
-          }
-
-          // Validate input
-          const validatedFields = customerLoginSchema.parse(credentials);
-
-          // Find customer with authentication info
-          const [customer] = await db
-            .select({
-              id: customers.id,
-              email: customers.email,
-              firstName: customers.firstName,
-              lastName: customers.lastName,
-              isActive: customers.isActive,
-              companyName: customers.companyName,
-              passwordHash: customerAuth.passwordHash,
-            })
-            .from(customers)
-            .innerJoin(customerAuth, eq(customers.id, customerAuth.customerId))
-            .where(eq(customers.email, validatedFields.email))
-            .limit(1);
-
-          if (!customer || !customer.isActive) {
-            throw new Error('Invalid credentials or inactive account');
-          }
-
-          // Verify password
-          const passwordMatch = await bcrypt.compare(
-            validatedFields.password,
-            customer.passwordHash
-          );
-          if (!passwordMatch) {
-            throw new Error('Invalid credentials');
-          }
-
-          return {
-            id: customer.id,
-            email: customer.email,
-            name: `${customer.firstName} ${customer.lastName}`,
-            userType: 'customer',
-            companyName: customer.companyName,
-            permissions: ['customer:read', 'customer:update'], // Basic customer permissions
-          };
-        } catch (error) {
-          console.error('Customer authentication error:', error);
-          return null;
-        }
-      },
-    }),
+    // Note: Customers use REST API (/api/auth/me/*) for mobile/external access
   ],
 
   callbacks: {
     async jwt({ token, user }) {
-      // Enrich JWT token with user context
+      // Enrich JWT token with staff user context
       if (user) {
-        token.userType = user.userType;
+        token.userType = 'staff'; // Web app is staff-only
         token.permissions = user.permissions;
         token.role = user.role;
         token.roleId = user.roleId;
-        token.companyName = user.companyName;
+        // Staff don't have companyName, only customers do
       }
       return token;
     },
 
     async session({ session, token }) {
-      // Enrich session with user context
+      // Enrich session with staff user context
       if (token && session.user) {
         session.user.id = token.sub!;
-        session.user.userType = token.userType as 'staff' | 'customer';
+        session.user.userType = 'staff'; // Web app is staff-only
         session.user.permissions = token.permissions as string[];
         session.user.role = token.role as string | null;
         session.user.roleId = token.roleId as string | null;
-        session.user.companyName = token.companyName as string | null;
+        session.user.companyName = null; // Staff don't have company names
       }
       return session;
     },
 
     async signIn({ user, account }) {
-      // Additional sign-in validation
-      if (account?.provider?.includes('credentials')) {
-        return !!user; // Allow sign-in if user exists
+      // Additional sign-in validation for staff
+      if (account?.provider === 'staff-credentials') {
+        return !!user && user.userType === 'staff';
       }
       return false;
     },
@@ -223,10 +99,10 @@ export const authOptions: NextAuthOptions = {
 
   events: {
     async signIn({ user, account }) {
-      console.log(`User ${user.email} signed in with ${account?.provider} (${user.userType})`);
+      console.log(`Staff user ${user.email} signed in via web app (${account?.provider})`);
     },
     async signOut({ session }) {
-      console.log(`User ${session?.user?.email} signed out`);
+      console.log(`Staff user ${session?.user?.email} signed out of web app`);
     },
   },
 

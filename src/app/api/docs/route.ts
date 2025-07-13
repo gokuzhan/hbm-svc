@@ -201,20 +201,32 @@ async function handler(request: NextRequest) {
                 
                 <div class="endpoint">
                     <span class="method get">GET</span>
-                    <span class="path">/api/users</span>
-                    <div class="description">Get paginated list of users with optional search</div>
+                    <span class="path">/api/staff/users</span>
+                    <div class="description">Get paginated list of users with RBAC permissions</div>
                 </div>
                 
                 <div class="endpoint">
                     <span class="method post">POST</span>
-                    <span class="path">/api/users</span>
-                    <div class="description">Create a new user with validation</div>
+                    <span class="path">/api/staff/users</span>
+                    <div class="description">Create a new user with role-based validation</div>
                 </div>
                 
                 <div class="endpoint">
                     <span class="method get">GET</span>
-                    <span class="path">/api/users/{id}</span>
-                    <div class="description">Get a specific user by UUID</div>
+                    <span class="path">/api/staff/users/{id}</span>
+                    <div class="description">Get a specific user by ID with permissions</div>
+                </div>
+                
+                <div class="endpoint">
+                    <span class="method put">PUT</span>
+                    <span class="path">/api/staff/users/{id}</span>
+                    <div class="description">Update user information with validation</div>
+                </div>
+                
+                <div class="endpoint">
+                    <span class="method delete">DELETE</span>
+                    <span class="path">/api/staff/users/{id}</span>
+                    <div class="description">Delete user with proper authorization</div>
                 </div>
             </div>
 
@@ -233,9 +245,9 @@ async function handler(request: NextRequest) {
                         <h3><span class="status-indicator"></span>Database Status</h3>
                         <p>Verify database connectivity and performance</p>
                     </a>
-                    <a href="/api/users?page=1&limit=5" class="link-card">
-                        <h3>👥 Example Request</h3>
-                        <p>Try the users endpoint with sample parameters</p>
+                    <a href="/api/staff/users?page=1&limit=5" class="link-card">
+                        <h3>👥 Staff Users</h3>
+                        <p>Try the staff user management endpoints</p>
                     </a>
                 </div>
             </div>

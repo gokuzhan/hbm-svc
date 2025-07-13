@@ -20,7 +20,7 @@ const updateUserSchema = z.object({
 });
 
 /**
- * GET /api/staffs/users/[id] - Get user by ID
+ * GET /api/staff/users/[id] - Get user by ID
  */
 async function handleGetUser(
   request: NextRequest,
@@ -64,7 +64,7 @@ async function handleGetUser(
 }
 
 /**
- * PUT /api/staffs/users/[id] - Update user
+ * PUT /api/staff/users/[id] - Update user
  */
 async function handleUpdateUser(
   request: NextRequest,
@@ -124,7 +124,7 @@ async function handleUpdateUser(
 }
 
 /**
- * DELETE /api/staffs/users/[id] - Delete user
+ * DELETE /api/staff/users/[id] - Delete user
  */
 async function handleDeleteUser(
   request: NextRequest,

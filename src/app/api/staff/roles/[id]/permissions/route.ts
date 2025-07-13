@@ -1,6 +1,6 @@
 /**
  * @openapi
- * /api/staffs/roles/{id}/permissions:
+ * /api/staff/roles/{id}/permissions:
  *   post:
  *     summary: Add permissions to a role
  *     tags:

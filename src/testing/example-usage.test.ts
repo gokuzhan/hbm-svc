@@ -39,7 +39,7 @@ describe('Example Architecture Test', () => {
     // Create mock request for API testing
     const request = ArchitectureTestHelper.createMockRequest({
       method: 'GET',
-      url: 'http://localhost:3000/api/staffs/users',
+      url: 'http://localhost:3000/api/staff/users',
     });
 
     // Test that utilities work without actually setting up database
@@ -47,7 +47,7 @@ describe('Example Architecture Test', () => {
     expect(context.userType).toBe('staff');
     expect(context.permissions).toContain('users:read');
     expect(request.method).toBe('GET');
-    expect(request.url).toBe('http://localhost:3000/api/staffs/users');
+    expect(request.url).toBe('http://localhost:3000/api/staff/users');
   });
 
   it('should validate architecture integrity', async () => {

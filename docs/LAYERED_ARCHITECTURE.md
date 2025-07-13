@@ -52,7 +52,7 @@ The HBM Service follows a **strict layered architecture pattern** that ensures c
 **Pattern**:
 
 ```typescript
-// /src/app/api/staffs/users/route.ts
+// /src/app/api/staff/users/route.ts
 import { NextRequest } from 'next/server';
 import { withApiHandler } from '@/lib/api/middleware';
 import { withStaffAuth, withPermissions } from '@/lib/rbac/middleware';
@@ -444,12 +444,12 @@ async transferUserRole(context: ServiceContext, userId: string, newRoleId: strin
 
 ```typescript
 // Integration tests for API routes
-describe('POST /api/staffs/users', () => {
+describe('POST /api/staff/users', () => {
   it('should create user with valid data and permissions', async () => {
     const token = await createStaffToken({ permissions: ['users:create'] });
 
     const response = await request(app)
-      .post('/api/staffs/users')
+      .post('/api/staff/users')
       .set('Authorization', `Bearer ${token}`)
       .send(validUserData)
       .expect(201);

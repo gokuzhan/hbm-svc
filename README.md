@@ -152,10 +152,12 @@ When the development server is running, you can access:
   - `GET /api/health` - General service health check
   - `GET /api/health/db` - Database connectivity check
 
-- **Users API** (Example endpoints):
-  - `GET /api/users` - List users with pagination and search
-  - `POST /api/users` - Create a new user
-  - `GET /api/users/{id}` - Get a specific user by ID
+- **Staff Users API**:
+  - `GET /api/staff/users` - List users with pagination and RBAC
+  - `POST /api/staff/users` - Create a new user with role validation
+  - `GET /api/staff/users/{id}` - Get a specific user by ID
+  - `PUT /api/staff/users/{id}` - Update user information
+  - `DELETE /api/staff/users/{id}` - Delete user
 
 - **Documentation**:
   - `GET /api/docs` - Interactive API documentation
@@ -170,8 +172,6 @@ Run the comprehensive API test suite:
 ```
 
 This will test all endpoints, validation, error handling, and rate limiting.
-
-- `GET /api/users/{id}` - Get user by ID
 
 - **Documentation**:
   - `GET /api/docs` - Interactive API documentation

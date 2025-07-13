@@ -22,7 +22,7 @@ const resetPasswordSchema = z.object({
 });
 
 /**
- * POST /api/staffs/users/[id]/reset-password - Reset user password
+ * POST /api/staff/users/[id]/reset-password - Reset user password
  */
 async function handleResetPassword(
   request: NextRequest,

@@ -2,7 +2,7 @@
 
 ## 🎯 Summary
 
-The HBM Service API infrastructure is now **complete and production-ready**. All core foundational requirements have been implemented, tested, and documented.
+The HBM Service API infrastructure is now **complete and production-ready**. All core foundational requirements have been implemented, tested, and documented, including a unified authentication system for both web and mobile clients.
 
 ## ✅ Completed Features
 
@@ -15,17 +15,35 @@ The HBM Service API infrastructure is now **complete and production-ready**. All
 - **Structured Logging**: Winston-based logging with security and audit trails
 - **Health Monitoring**: Service and database health check endpoints
 
+### Authentication System
+
+- **Unified Architecture**: Both NextAuth.js and REST API use the same AuthService following DAL patterns
+- **JWT Authentication**: NextAuth.js-powered JWT tokens for mobile/API clients with secure encode/decode
+- **Staff-Only Web Auth**: NextAuth.js restricted to staff users only
+- **Multi-Client Support**: Both staff and customers can authenticate via REST API
+- **Token Management**: Access token (1 hour) and refresh token (7 days) system
+- **Security Features**: Rate limiting, session management, comprehensive logging, unified JWT middleware
+
 ### API Endpoints
+
+#### Core Infrastructure
 
 - **Health Checks**: `/api/health` and `/api/health/db`
 - **Users API**: Full CRUD operations with validation and pagination
 - **Documentation**: Interactive API docs at `/api/docs`
 - **OpenAPI Specification**: Complete spec available at `/api/docs/openapi.json`
 
+#### Authentication Endpoints
+
+- **Login**: `POST /api/auth/me/login` - JWT authentication for staff and customers
+- **User Info**: `GET /api/auth/me` - Get authenticated user information (JWT required)
+- **Token Refresh**: `POST /api/auth/me/refresh` - Refresh expired access tokens using refresh token
+- **Logout**: `POST /api/auth/me/logout` - Invalidate user session and tokens
+
 ### Documentation & Testing
 
 - **Comprehensive API Documentation**: Interactive HTML documentation
-- **OpenAPI 3.0 Specification**: Complete API specification with schemas
+- **OpenAPI 3.0 Specification**: Complete API specification with authentication schemas
 - **Usage Guides**: Detailed documentation in `docs/API_INFRASTRUCTURE.md`
 - **Test Script**: Automated testing script at `scripts/test-api.sh`
 

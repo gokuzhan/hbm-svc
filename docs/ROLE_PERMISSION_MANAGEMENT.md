@@ -70,31 +70,31 @@ Permissions follow the format: `resource:action`
 ### Role Management
 
 ```
-GET    /api/staffs/roles/                    # List roles with pagination
-POST   /api/staffs/roles/                    # Create new role
-GET    /api/staffs/roles/{id}                # Get role details
-PUT    /api/staffs/roles/{id}                # Update role
-DELETE /api/staffs/roles/{id}                # Delete role
+GET    /api/staff/roles/                    # List roles with pagination
+POST   /api/staff/roles/                    # Create new role
+GET    /api/staff/roles/{id}                # Get role details
+PUT    /api/staff/roles/{id}                # Update role
+DELETE /api/staff/roles/{id}                # Delete role
 ```
 
 ### Permission Management
 
 ```
-GET    /api/staffs/roles/permissions/        # List all available permissions
-POST   /api/staffs/roles/{id}/permissions/   # Add permissions to role
-DELETE /api/staffs/roles/{id}/permissions/   # Remove permissions from role
+GET    /api/staff/roles/permissions/        # List all available permissions
+POST   /api/staff/roles/{id}/permissions/   # Add permissions to role
+DELETE /api/staff/roles/{id}/permissions/   # Remove permissions from role
 ```
 
 ### Bulk Operations
 
 ```
-POST   /api/staffs/roles/bulk-permissions/   # Bulk permission operations
+POST   /api/staff/roles/bulk-permissions/   # Bulk permission operations
 ```
 
 ### Impact Analysis
 
 ```
-GET    /api/staffs/roles/{id}/impact/        # Analyze role change impact
+GET    /api/staff/roles/{id}/impact/        # Analyze role change impact
 ```
 
 ## Business Rules

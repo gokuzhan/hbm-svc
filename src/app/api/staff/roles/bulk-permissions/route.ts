@@ -1,6 +1,6 @@
 /**
  * @openapi
- * /api/staffs/roles/bulk-permissions:
+ * /api/staff/roles/bulk-permissions:
  *   post:
  *     summary: Perform bulk permission operations on multiple roles
  *     tags:

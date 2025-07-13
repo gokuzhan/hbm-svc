@@ -12,6 +12,97 @@ The API infrastructure consists of several key components:
 - **Rate Limiting** (`src/lib/api/rate-limit.ts`)
 - **Structured Logging** (`src/lib/api/logger.ts`)
 - **OpenAPI Documentation** (`src/lib/api/openapi.ts`)
+- **Authentication System** (NextAuth.js + REST API)
+
+## 🔐 Authentication System
+
+The HBM Service implements a unified authentication system supporting both web (NextAuth.js for staff) and mobile/API (REST JWT for staff and customers) clients. Both systems use the same AuthService following a layered DAL architecture.
+
+### Key Features
+
+- **Unified Backend**: Both NextAuth.js and REST API use the same AuthService and repository layer
+- **Staff-Only Web**: NextAuth.js restricted to staff users only
+- **Multi-Client API**: REST API supports both staff and customers
+- **NextAuth.js JWT**: Uses NextAuth.js encode/decode utilities for secure JWT handling
+- **Token Security**: Access tokens (1 hour) and refresh tokens (7 days) with automatic rotation
+
+### Authentication Endpoints
+
+#### Login
+
+```bash
+POST /api/auth/me/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password123",
+  "userType": "staff"  // or "customer"
+}
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "user": {
+      "id": "uuid",
+      "email": "user@example.com",
+      "name": "User Name",
+      "userType": "staff",
+      "permissions": ["READ_USERS", "WRITE_USERS"],
+      "isActive": true,
+      "sessionId": "uuid"
+    },
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "tokenType": "Bearer",
+    "expiresIn": 3600,
+    "expiresAt": "2024-01-01T01:00:00Z"
+  }
+}
+```
+
+#### Get Current User
+
+```bash
+GET /api/auth/me
+Authorization: Bearer <jwt-token>
+```
+
+#### Refresh Token
+
+```bash
+POST /api/auth/me/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "your-refresh-token"
+}
+```
+
+#### Logout
+
+```bash
+POST /api/auth/me/logout
+Authorization: Bearer <jwt-token>
+```
+
+### JWT Authentication
+
+For protected endpoints, include the JWT token in the Authorization header:
+
+```typescript
+const response = await fetch('/api/protected-endpoint', {
+  headers: {
+    Authorization: `Bearer ${accessToken}`,
+    'Content-Type': 'application/json',
+  },
+});
+```
 
 ## 🚀 Quick Start
 

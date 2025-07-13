@@ -1,8 +1,9 @@
 // Customer Profile API - Customer Profile Management
+// Updated to use JWT authentication instead of NextAuth.js sessions
 
+import { JWTAuthContext, withJWTCustomerAuth } from '@/lib/api/jwt-middleware';
 import { logger } from '@/lib/api/logger';
 import { createErrorResponse, createSuccessResponse } from '@/lib/api/responses';
-import { AuthContext, withCustomerAuth } from '@/lib/rbac/middleware';
 import { CustomerService } from '@/lib/services';
 import { ValidationError } from '@/lib/services/types';
 import { NextRequest } from 'next/server';
@@ -24,7 +25,7 @@ const updateProfileSchema = z.object({
 /**
  * GET /api/customer/profile - Get customer profile
  */
-async function handleGetProfile(request: NextRequest, context: AuthContext) {
+async function handleGetProfile(request: NextRequest, context: JWTAuthContext) {
   try {
     const customerService = new CustomerService();
 
@@ -56,7 +57,7 @@ async function handleGetProfile(request: NextRequest, context: AuthContext) {
 /**
  * PUT /api/customer/profile - Update customer profile
  */
-async function handleUpdateProfile(request: NextRequest, context: AuthContext) {
+async function handleUpdateProfile(request: NextRequest, context: JWTAuthContext) {
   try {
     const body = await request.json();
     const validatedData = updateProfileSchema.parse(body);
@@ -104,5 +105,6 @@ async function handleUpdateProfile(request: NextRequest, context: AuthContext) {
 }
 
 // Apply customer authentication middleware and export handlers
-export const GET = withCustomerAuth(handleGetProfile);
-export const PUT = withCustomerAuth(handleUpdateProfile);
+// Export handlers with JWT middleware
+export const GET = withJWTCustomerAuth(handleGetProfile);
+export const PUT = withJWTCustomerAuth(handleUpdateProfile);

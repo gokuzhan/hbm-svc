@@ -159,7 +159,7 @@ name: z.string()
 3. **`/src/lib/repositories/customer.repository.ts`** - Replaced inline regex with centralized validation
 4. **`/src/lib/services/user.service.ts`** - Migrated password and validation logic
 5. **`/src/app/api/public/inquiry/route.ts`** - Updated to use centralized schemas
-6. **`/src/app/api/users/[[...id]]/route.ts`** - Updated example schemas
+6. **`/src/app/api/users/[[...id]]/route.ts`** - REMOVED: Demo endpoint with example schemas (replaced by production /api/staff/users)
 
 #### Centralized Validation System:
 

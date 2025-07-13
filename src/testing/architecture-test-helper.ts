@@ -377,7 +377,7 @@ export class ArchitectureTestHelper {
               // 2. Create mock request
               const request = ArchitectureTestHelper.createMockRequest({
                 method: 'POST',
-                url: 'http://localhost:3000/api/staffs/users',
+                url: 'http://localhost:3000/api/staff/users',
                 body: { email: 'new@example.com', name: 'New User', password: 'testpass123' },
               });
               
@@ -512,7 +512,7 @@ export const ArchitectureTestExamples = {
     // Test complete flow through all layers
     const request = ArchitectureTestHelper.createMockRequest({
       method: 'GET',
-      url: `http://localhost:3000/api/staffs/users/${testUser.id}`,
+      url: `http://localhost:3000/api/staff/users/${testUser.id}`,
     });
 
     // This would be the actual API call test in a real test

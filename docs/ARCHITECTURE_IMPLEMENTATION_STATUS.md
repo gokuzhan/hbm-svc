@@ -72,7 +72,7 @@ Based on analysis of the current codebase, here's the comprehensive status of la
 
 **Status: WELL-IMPLEMENTED**
 
-- [x] Staff endpoints (`/api/staffs/`) with RBAC
+- [x] Staff endpoints (`/api/staff/`) with RBAC
 - [x] Customer endpoints (`/api/customer/`) with access control
 - [x] Public endpoints (`/api/public/`) for inquiries
 - [x] Health check endpoints (`/api/health/`)

@@ -29,7 +29,7 @@ const listUsersSchema = z.object({
 });
 
 /**
- * GET /api/staffs/users - List users with pagination and filtering
+ * GET /api/staff/users - List users with pagination and filtering
  */
 async function handleGetUsers(request: NextRequest, context: AuthContext) {
   const { searchParams } = new URL(request.url);
@@ -74,7 +74,7 @@ async function handleGetUsers(request: NextRequest, context: AuthContext) {
 }
 
 /**
- * POST /api/staffs/users - Create a new user
+ * POST /api/staff/users - Create a new user
  */
 async function handleCreateUser(request: NextRequest, context: AuthContext) {
   const body = await request.json();

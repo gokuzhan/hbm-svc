@@ -103,11 +103,162 @@ export const openAPISpec = {
         },
       },
     },
-    '/users': {
+    '/auth/me/login': {
+      post: {
+        summary: 'Authenticate user',
+        description:
+          'Authenticate user credentials and return JWT token for both staff and customer users',
+        tags: ['Authentication'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/LoginRequest',
+              },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'Authentication successful',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/LoginResponse',
+                },
+              },
+            },
+          },
+          '400': {
+            $ref: '#/components/responses/ValidationError',
+          },
+          '401': {
+            description: 'Invalid credentials',
+            content: {
+              'application/json': {
+                schema: {
+                  allOf: [
+                    { $ref: '#/components/schemas/ErrorResponse' },
+                    {
+                      type: 'object',
+                      properties: {
+                        error: {
+                          type: 'object',
+                          properties: {
+                            code: {
+                              type: 'string',
+                              example: 'INVALID_CREDENTIALS',
+                            },
+                          },
+                        },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+          '429': {
+            $ref: '#/components/responses/RateLimitExceeded',
+          },
+        },
+      },
+    },
+    '/auth/me': {
       get: {
-        summary: 'Get all users',
-        description: 'Retrieve a paginated list of users with optional search',
-        tags: ['Users'],
+        summary: 'Get current user',
+        description: 'Get the current authenticated user information from JWT token',
+        tags: ['Authentication'],
+        security: [{ BearerAuth: [] }],
+        responses: {
+          '200': {
+            description: 'User information retrieved successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/CurrentUserResponse',
+                },
+              },
+            },
+          },
+          '401': {
+            $ref: '#/components/responses/Unauthorized',
+          },
+          '429': {
+            $ref: '#/components/responses/RateLimitExceeded',
+          },
+        },
+      },
+    },
+    '/auth/me/refresh': {
+      post: {
+        summary: 'Refresh JWT token',
+        description: 'Refresh the JWT token and generate a new one with updated session ID',
+        tags: ['Authentication'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/RefreshTokenRequest',
+              },
+            },
+          },
+        },
+        security: [{ BearerAuth: [] }],
+        responses: {
+          '200': {
+            description: 'Token refreshed successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/LoginResponse',
+                },
+              },
+            },
+          },
+          '401': {
+            $ref: '#/components/responses/Unauthorized',
+          },
+          '429': {
+            $ref: '#/components/responses/RateLimitExceeded',
+          },
+        },
+      },
+    },
+    '/auth/me/logout': {
+      post: {
+        summary: 'Logout user',
+        description: 'Logout the current user and invalidate the JWT token',
+        tags: ['Authentication'],
+        security: [{ BearerAuth: [] }],
+        responses: {
+          '200': {
+            description: 'Logout successful',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/LogoutResponse',
+                },
+              },
+            },
+          },
+          '401': {
+            $ref: '#/components/responses/Unauthorized',
+          },
+          '429': {
+            $ref: '#/components/responses/RateLimitExceeded',
+          },
+        },
+      },
+    },
+    '/staff/users': {
+      get: {
+        summary: 'List staff users',
+        description: 'Retrieve a paginated list of users with RBAC permissions',
+        tags: ['Staff Management'],
+        security: [{ BearerAuth: [] }],
         parameters: [
           {
             name: 'page',
@@ -141,6 +292,46 @@ export const openAPISpec = {
               type: 'string',
             },
           },
+          {
+            name: 'role',
+            in: 'query',
+            description: 'Filter by role name',
+            required: false,
+            schema: {
+              type: 'string',
+            },
+          },
+          {
+            name: 'isActive',
+            in: 'query',
+            description: 'Filter by active status',
+            required: false,
+            schema: {
+              type: 'boolean',
+            },
+          },
+          {
+            name: 'sortBy',
+            in: 'query',
+            description: 'Sort field',
+            required: false,
+            schema: {
+              type: 'string',
+              enum: ['name', 'email', 'createdAt', 'updatedAt'],
+              default: 'createdAt',
+            },
+          },
+          {
+            name: 'sortOrder',
+            in: 'query',
+            description: 'Sort order',
+            required: false,
+            schema: {
+              type: 'string',
+              enum: ['asc', 'desc'],
+              default: 'desc',
+            },
+          },
         ],
         responses: {
           '200': {
@@ -148,7 +339,7 @@ export const openAPISpec = {
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/UsersListResponse',
+                  $ref: '#/components/schemas/StaffUsersListResponse',
                 },
               },
             },
@@ -156,21 +347,28 @@ export const openAPISpec = {
           '400': {
             $ref: '#/components/responses/ValidationError',
           },
+          '401': {
+            $ref: '#/components/responses/Unauthorized',
+          },
+          '403': {
+            $ref: '#/components/responses/Forbidden',
+          },
           '429': {
             $ref: '#/components/responses/RateLimitExceeded',
           },
         },
       },
       post: {
-        summary: 'Create a new user',
-        description: 'Create a new user with the provided information',
-        tags: ['Users'],
+        summary: 'Create a new staff user',
+        description: 'Create a new user with role-based validation and RBAC permissions',
+        tags: ['Staff Management'],
+        security: [{ BearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
             'application/json': {
               schema: {
-                $ref: '#/components/schemas/CreateUserRequest',
+                $ref: '#/components/schemas/CreateStaffUserRequest',
               },
             },
           },
@@ -186,7 +384,7 @@ export const openAPISpec = {
                     {
                       type: 'object',
                       properties: {
-                        data: { $ref: '#/components/schemas/User' },
+                        data: { $ref: '#/components/schemas/StaffUser' },
                       },
                     },
                   ],
@@ -196,6 +394,12 @@ export const openAPISpec = {
           },
           '400': {
             $ref: '#/components/responses/ValidationError',
+          },
+          '401': {
+            $ref: '#/components/responses/Unauthorized',
+          },
+          '403': {
+            $ref: '#/components/responses/Forbidden',
           },
           '409': {
             description: 'Email already exists',
@@ -213,11 +417,12 @@ export const openAPISpec = {
         },
       },
     },
-    '/users/{id}': {
+    '/staff/users/{id}': {
       get: {
-        summary: 'Get user by ID',
-        description: 'Retrieve a specific user by their unique identifier',
-        tags: ['Users'],
+        summary: 'Get staff user by ID',
+        description: 'Retrieve a specific user by their unique identifier with RBAC permissions',
+        tags: ['Staff Management'],
+        security: [{ BearerAuth: [] }],
         parameters: [
           {
             name: 'id',
@@ -241,7 +446,7 @@ export const openAPISpec = {
                     {
                       type: 'object',
                       properties: {
-                        data: { $ref: '#/components/schemas/User' },
+                        data: { $ref: '#/components/schemas/StaffUser' },
                       },
                     },
                   ],
@@ -252,8 +457,237 @@ export const openAPISpec = {
           '400': {
             $ref: '#/components/responses/ValidationError',
           },
+          '401': {
+            $ref: '#/components/responses/Unauthorized',
+          },
+          '403': {
+            $ref: '#/components/responses/Forbidden',
+          },
           '404': {
             $ref: '#/components/responses/NotFound',
+          },
+          '429': {
+            $ref: '#/components/responses/RateLimitExceeded',
+          },
+        },
+      },
+      put: {
+        summary: 'Update staff user',
+        description: 'Update user information with validation and RBAC permissions',
+        tags: ['Staff Management'],
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            description: 'User UUID',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid',
+            },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/UpdateStaffUserRequest',
+              },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'User updated successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  allOf: [
+                    { $ref: '#/components/schemas/SuccessResponse' },
+                    {
+                      type: 'object',
+                      properties: {
+                        data: { $ref: '#/components/schemas/StaffUser' },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+          '400': {
+            $ref: '#/components/responses/ValidationError',
+          },
+          '401': {
+            $ref: '#/components/responses/Unauthorized',
+          },
+          '403': {
+            $ref: '#/components/responses/Forbidden',
+          },
+          '404': {
+            $ref: '#/components/responses/NotFound',
+          },
+          '429': {
+            $ref: '#/components/responses/RateLimitExceeded',
+          },
+        },
+      },
+      delete: {
+        summary: 'Delete staff user',
+        description: 'Delete user with proper authorization and RBAC permissions',
+        tags: ['Staff Management'],
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            description: 'User UUID',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid',
+            },
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'User deleted successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  allOf: [
+                    { $ref: '#/components/schemas/SuccessResponse' },
+                    {
+                      type: 'object',
+                      properties: {
+                        data: {
+                          type: 'object',
+                          properties: {
+                            id: {
+                              type: 'string',
+                              format: 'uuid',
+                            },
+                          },
+                        },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+          '401': {
+            $ref: '#/components/responses/Unauthorized',
+          },
+          '403': {
+            $ref: '#/components/responses/Forbidden',
+          },
+          '404': {
+            $ref: '#/components/responses/NotFound',
+          },
+          '429': {
+            $ref: '#/components/responses/RateLimitExceeded',
+          },
+        },
+      },
+    },
+    '/staff/roles': {
+      get: {
+        summary: 'List roles',
+        description: 'Retrieve a paginated list of roles with permissions',
+        tags: ['Role Management'],
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: 'page',
+            in: 'query',
+            description: 'Page number (default: 1)',
+            required: false,
+            schema: {
+              type: 'integer',
+              minimum: 1,
+              default: 1,
+            },
+          },
+          {
+            name: 'limit',
+            in: 'query',
+            description: 'Number of roles per page (default: 10, max: 100)',
+            required: false,
+            schema: {
+              type: 'integer',
+              minimum: 1,
+              maximum: 100,
+              default: 10,
+            },
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Roles retrieved successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/RolesListResponse',
+                },
+              },
+            },
+          },
+          '401': {
+            $ref: '#/components/responses/Unauthorized',
+          },
+          '403': {
+            $ref: '#/components/responses/Forbidden',
+          },
+          '429': {
+            $ref: '#/components/responses/RateLimitExceeded',
+          },
+        },
+      },
+      post: {
+        summary: 'Create a new role',
+        description: 'Create a new role with specified permissions',
+        tags: ['Role Management'],
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/CreateRoleRequest',
+              },
+            },
+          },
+        },
+        responses: {
+          '201': {
+            description: 'Role created successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  allOf: [
+                    { $ref: '#/components/schemas/SuccessResponse' },
+                    {
+                      type: 'object',
+                      properties: {
+                        data: { $ref: '#/components/schemas/Role' },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+          '400': {
+            $ref: '#/components/responses/ValidationError',
+          },
+          '401': {
+            $ref: '#/components/responses/Unauthorized',
+          },
+          '403': {
+            $ref: '#/components/responses/Forbidden',
           },
           '429': {
             $ref: '#/components/responses/RateLimitExceeded',
@@ -421,30 +855,92 @@ export const openAPISpec = {
         },
         required: ['id', 'name', 'email'],
       },
-      CreateUserRequest: {
+      AuthenticatedUser: {
         type: 'object',
         properties: {
-          name: {
+          id: {
             type: 'string',
-            minLength: 1,
-            maxLength: 100,
-            example: 'John Doe',
+            format: 'uuid',
+            example: '82cab27e-d0b3-409e-93f6-58aad0b77d8e',
           },
           email: {
             type: 'string',
             format: 'email',
-            example: 'john@example.com',
+            example: 'admin@huezo.in',
           },
-          age: {
-            type: 'integer',
-            minimum: 0,
-            maximum: 150,
-            example: 30,
+          name: {
+            type: 'string',
+            example: 'Super Admin',
+          },
+          userType: {
+            type: 'string',
+            enum: ['staff', 'customer'],
+            example: 'staff',
+          },
+          permissions: {
+            type: 'array',
+            items: {
+              type: 'string',
+              example: 'users:read',
+            },
+            description: 'Array of permissions in format resource:action',
+          },
+          role: {
+            type: 'string',
+            nullable: true,
+            example: 'superadmin',
+            description: 'Role name (only for staff users)',
+          },
+          roleId: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true,
+            example: '4b546030-0f86-4538-91db-2e373061bf49',
+            description: 'Role ID (only for staff users)',
+          },
+          companyName: {
+            type: 'string',
+            nullable: true,
+            example: 'Acme Corp',
+            description: 'Company name (only for customer users)',
+          },
+          isActive: {
+            type: 'boolean',
+            example: true,
+          },
+          sessionId: {
+            type: 'string',
+            format: 'uuid',
+            example: '12281b61-0de5-4dcc-91fd-b3a1f97fb4de',
           },
         },
-        required: ['name', 'email'],
+        required: ['id', 'email', 'name', 'userType', 'permissions', 'isActive', 'sessionId'],
       },
-      UsersListResponse: {
+      LoginRequest: {
+        type: 'object',
+        properties: {
+          email: {
+            type: 'string',
+            format: 'email',
+            example: 'admin@huezo.in',
+            description: 'User email address',
+          },
+          password: {
+            type: 'string',
+            minLength: 1,
+            example: 'admin123',
+            description: 'User password',
+          },
+          userType: {
+            type: 'string',
+            enum: ['staff', 'customer'],
+            example: 'staff',
+            description: 'Type of user authentication',
+          },
+        },
+        required: ['email', 'password', 'userType'],
+      },
+      LoginResponse: {
         allOf: [
           { $ref: '#/components/schemas/SuccessResponse' },
           {
@@ -453,19 +949,334 @@ export const openAPISpec = {
               data: {
                 type: 'object',
                 properties: {
-                  users: {
-                    type: 'array',
-                    items: { $ref: '#/components/schemas/User' },
+                  user: {
+                    $ref: '#/components/schemas/AuthenticatedUser',
                   },
-                  pagination: {
-                    type: 'object',
-                    properties: {
-                      page: { type: 'integer', example: 1 },
-                      limit: { type: 'integer', example: 10 },
-                      total: { type: 'integer', example: 100 },
-                      pages: { type: 'integer', example: 10 },
-                    },
+                  accessToken: {
+                    type: 'string',
+                    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+                    description: 'JWT access token (1 hour expiration)',
                   },
+                  refreshToken: {
+                    type: 'string',
+                    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+                    description: 'JWT refresh token (7 days expiration)',
+                  },
+                  tokenType: {
+                    type: 'string',
+                    enum: ['Bearer'],
+                    example: 'Bearer',
+                  },
+                  expiresIn: {
+                    type: 'integer',
+                    example: 3600,
+                    description: 'Access token expiration time in seconds',
+                  },
+                  expiresAt: {
+                    type: 'string',
+                    format: 'date-time',
+                    example: '2024-01-01T01:00:00Z',
+                    description: 'Access token expiration timestamp',
+                  },
+                },
+                required: [
+                  'user',
+                  'accessToken',
+                  'refreshToken',
+                  'tokenType',
+                  'expiresIn',
+                  'expiresAt',
+                ],
+              },
+            },
+          },
+        ],
+      },
+      RefreshTokenRequest: {
+        type: 'object',
+        properties: {
+          refreshToken: {
+            type: 'string',
+            minLength: 1,
+            example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+            description: 'JWT refresh token to exchange for new access token',
+          },
+        },
+        required: ['refreshToken'],
+      },
+      CurrentUserResponse: {
+        allOf: [
+          { $ref: '#/components/schemas/SuccessResponse' },
+          {
+            type: 'object',
+            properties: {
+              data: {
+                type: 'object',
+                properties: {
+                  user: {
+                    $ref: '#/components/schemas/AuthenticatedUser',
+                  },
+                },
+                required: ['user'],
+              },
+            },
+          },
+        ],
+      },
+      LogoutResponse: {
+        allOf: [
+          { $ref: '#/components/schemas/SuccessResponse' },
+          {
+            type: 'object',
+            properties: {
+              data: {
+                type: 'object',
+                properties: {
+                  message: {
+                    type: 'string',
+                    example: 'Logged out successfully',
+                  },
+                },
+                required: ['message'],
+              },
+            },
+          },
+        ],
+      },
+      StaffUser: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uuid',
+            example: '123e4567-e89b-12d3-a456-426614174000',
+          },
+          email: {
+            type: 'string',
+            format: 'email',
+            example: 'john@example.com',
+          },
+          firstName: {
+            type: 'string',
+            example: 'John',
+          },
+          lastName: {
+            type: 'string',
+            example: 'Doe',
+          },
+          phone: {
+            type: 'string',
+            nullable: true,
+            example: '+1234567890',
+          },
+          roleId: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true,
+            example: '456e7890-e89b-12d3-a456-426614174001',
+          },
+          roleName: {
+            type: 'string',
+            nullable: true,
+            example: 'Admin',
+          },
+          isActive: {
+            type: 'boolean',
+            example: true,
+          },
+          createdAt: {
+            type: 'string',
+            format: 'date-time',
+            example: '2024-01-01T00:00:00Z',
+          },
+          updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            example: '2024-01-01T00:00:00Z',
+          },
+        },
+        required: ['id', 'email', 'firstName', 'lastName', 'isActive', 'createdAt', 'updatedAt'],
+      },
+      Role: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uuid',
+            example: '456e7890-e89b-12d3-a456-426614174001',
+          },
+          name: {
+            type: 'string',
+            example: 'Admin',
+          },
+          description: {
+            type: 'string',
+            nullable: true,
+            example: 'Administrator role with full permissions',
+          },
+          permissions: {
+            type: 'array',
+            items: {
+              type: 'string',
+              example: 'users:read',
+            },
+            description: 'Array of permissions in format resource:action',
+          },
+          isActive: {
+            type: 'boolean',
+            example: true,
+          },
+          createdAt: {
+            type: 'string',
+            format: 'date-time',
+            example: '2024-01-01T00:00:00Z',
+          },
+          updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            example: '2024-01-01T00:00:00Z',
+          },
+        },
+        required: ['id', 'name', 'permissions', 'isActive', 'createdAt', 'updatedAt'],
+      },
+      CreateStaffUserRequest: {
+        type: 'object',
+        properties: {
+          email: {
+            type: 'string',
+            format: 'email',
+            example: 'john@example.com',
+          },
+          name: {
+            type: 'string',
+            minLength: 1,
+            example: 'John Doe',
+            description: 'Full name that will be split into firstName and lastName',
+          },
+          password: {
+            type: 'string',
+            minLength: 8,
+            example: 'securePassword123',
+          },
+          roleId: {
+            type: 'string',
+            format: 'uuid',
+            example: '456e7890-e89b-12d3-a456-426614174001',
+          },
+          isActive: {
+            type: 'boolean',
+            default: true,
+            example: true,
+          },
+        },
+        required: ['email', 'name', 'password'],
+      },
+      UpdateStaffUserRequest: {
+        type: 'object',
+        properties: {
+          email: {
+            type: 'string',
+            format: 'email',
+            example: 'john@example.com',
+          },
+          firstName: {
+            type: 'string',
+            minLength: 1,
+            example: 'John',
+          },
+          lastName: {
+            type: 'string',
+            minLength: 1,
+            example: 'Doe',
+          },
+          phone: {
+            type: 'string',
+            nullable: true,
+            example: '+1234567890',
+          },
+          roleId: {
+            type: 'string',
+            format: 'uuid',
+            nullable: true,
+            example: '456e7890-e89b-12d3-a456-426614174001',
+          },
+          isActive: {
+            type: 'boolean',
+            example: true,
+          },
+        },
+      },
+      CreateRoleRequest: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+            minLength: 1,
+            maxLength: 50,
+            example: 'Admin',
+          },
+          description: {
+            type: 'string',
+            nullable: true,
+            maxLength: 200,
+            example: 'Administrator role with full permissions',
+          },
+          permissions: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+            example: ['users:read', 'users:create', 'users:update', 'users:delete'],
+            description: 'Array of permissions in format resource:action',
+          },
+          isActive: {
+            type: 'boolean',
+            default: true,
+            example: true,
+          },
+        },
+        required: ['name', 'permissions'],
+      },
+      StaffUsersListResponse: {
+        allOf: [
+          { $ref: '#/components/schemas/SuccessResponse' },
+          {
+            type: 'object',
+            properties: {
+              data: {
+                type: 'array',
+                items: { $ref: '#/components/schemas/StaffUser' },
+              },
+              pagination: {
+                type: 'object',
+                properties: {
+                  page: { type: 'integer', example: 1 },
+                  limit: { type: 'integer', example: 10 },
+                  total: { type: 'integer', example: 100 },
+                  pages: { type: 'integer', example: 10 },
+                },
+              },
+            },
+          },
+        ],
+      },
+      RolesListResponse: {
+        allOf: [
+          { $ref: '#/components/schemas/SuccessResponse' },
+          {
+            type: 'object',
+            properties: {
+              data: {
+                type: 'array',
+                items: { $ref: '#/components/schemas/Role' },
+              },
+              pagination: {
+                type: 'object',
+                properties: {
+                  page: { type: 'integer', example: 1 },
+                  limit: { type: 'integer', example: 10 },
+                  total: { type: 'integer', example: 100 },
+                  pages: { type: 'integer', example: 10 },
                 },
               },
             },
@@ -580,6 +1391,58 @@ export const openAPISpec = {
           },
         },
       },
+      Unauthorized: {
+        description: 'Authentication required or token invalid',
+        content: {
+          'application/json': {
+            schema: {
+              allOf: [
+                { $ref: '#/components/schemas/ErrorResponse' },
+                {
+                  type: 'object',
+                  properties: {
+                    error: {
+                      type: 'object',
+                      properties: {
+                        code: {
+                          type: 'string',
+                          example: 'UNAUTHORIZED',
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+      Forbidden: {
+        description: 'Insufficient permissions',
+        content: {
+          'application/json': {
+            schema: {
+              allOf: [
+                { $ref: '#/components/schemas/ErrorResponse' },
+                {
+                  type: 'object',
+                  properties: {
+                    error: {
+                      type: 'object',
+                      properties: {
+                        code: {
+                          type: 'string',
+                          example: 'PERMISSION_DENIED',
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
       InternalServerError: {
         description: 'Internal server error',
         content: {
@@ -626,8 +1489,16 @@ export const openAPISpec = {
       description: 'Health check endpoints',
     },
     {
-      name: 'Users',
-      description: 'User management endpoints',
+      name: 'Authentication',
+      description: 'Authentication and session management endpoints',
+    },
+    {
+      name: 'Staff Management',
+      description: 'Staff user management endpoints with RBAC permissions',
+    },
+    {
+      name: 'Role Management',
+      description: 'Role and permission management endpoints',
     },
   ],
 } as const;
