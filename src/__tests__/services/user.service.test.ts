@@ -44,7 +44,7 @@ describe('UserService', () => {
     it('should create a user with valid data', async () => {
       const userData = {
         email: 'test@example.com',
-        password: 'securePassword123',
+        password: 'SecurePass123!',
         firstName: 'John',
         lastName: 'Doe',
         isActive: true,
@@ -73,7 +73,7 @@ describe('UserService', () => {
     it('should throw ValidationError for invalid email', async () => {
       const userData = {
         email: 'invalid-email',
-        password: 'securePassword123',
+        password: 'SecurePass123!',
         firstName: 'John',
         lastName: 'Doe',
         isActive: true,
@@ -97,7 +97,7 @@ describe('UserService', () => {
     it('should throw ValidationError for duplicate email', async () => {
       const userData = {
         email: 'existing@example.com',
-        password: 'securePassword123',
+        password: 'SecurePass123!',
         firstName: 'John',
         lastName: 'Doe',
         isActive: true,
@@ -126,7 +126,7 @@ describe('UserService', () => {
 
       const userData = {
         email: 'test@example.com',
-        password: 'securePassword123',
+        password: 'SecurePass123!',
         firstName: 'John',
         lastName: 'Doe',
         isActive: true,
@@ -151,8 +151,8 @@ describe('UserService', () => {
       };
 
       const passwordData = {
-        currentPassword: 'oldPassword',
-        newPassword: 'newSecurePassword123',
+        currentPassword: 'OldPassword123!',
+        newPassword: 'NewSecurePass456!',
       };
 
       mockUserRepository.findById.mockResolvedValue(mockUser);
@@ -256,7 +256,7 @@ describe('UserService', () => {
   describe('adminResetPassword', () => {
     it('should reset password for another user', async () => {
       const targetUserId = 'user-456';
-      const newPassword = 'NewPassword123';
+      const newPassword = 'NewPassword123!';
 
       const mockUser = {
         id: targetUserId,
@@ -280,7 +280,7 @@ describe('UserService', () => {
     });
 
     it('should throw ValidationError when admin tries to reset own password', async () => {
-      const newPassword = 'NewPassword123';
+      const newPassword = 'NewPassword123!';
 
       await expect(
         userService.adminResetPassword(mockContext, mockContext.userId!, newPassword)

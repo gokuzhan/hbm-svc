@@ -1,8 +1,12 @@
 // API Validation Utilities
+// UPDATED: Now uses centralized validation patterns from @/lib/validation
 
 import { NextRequest } from 'next/server';
 import { z, ZodSchema } from 'zod';
 import { handleValidationError } from './responses';
+
+// Import centralized validation patterns (replacing duplicated commonSchemas)
+import { commonValidationPatterns, commonValidationSchemas } from '@/lib/validation';
 
 /**
  * Validate request body with Zod schema
@@ -62,100 +66,17 @@ export function validateQueryParams<T>(
 }
 
 /**
- * Common validation schemas
+ * Common validation schemas - DEPRECATED: Use @/lib/validation instead
+ * @deprecated Import from '@/lib/validation' for centralized validation patterns
  */
-export const commonSchemas = {
-  // UUID validation
-  uuid: z.string().uuid('Invalid UUID format'),
-
-  // Pagination parameters
-  pagination: z
-    .object({
-      page: z
-        .string()
-        .optional()
-        .transform((val) => (val ? parseInt(val, 10) : 1)),
-      limit: z
-        .string()
-        .optional()
-        .transform((val) => (val ? parseInt(val, 10) : 20)),
-    })
-    .refine((data) => data.page > 0, {
-      message: 'Page must be greater than 0',
-      path: ['page'],
-    })
-    .refine((data) => data.limit > 0 && data.limit <= 100, {
-      message: 'Limit must be between 1 and 100',
-      path: ['limit'],
-    }),
-
-  // Search parameters
-  search: z.object({
-    q: z.string().min(1, 'Search query is required').optional(),
-    sort: z.enum(['asc', 'desc']).optional().default('asc'),
-    sortBy: z.string().optional(),
-  }),
-
-  // Email validation
-  email: z.string().email('Invalid email format'),
-
-  // Phone validation (basic)
-  phone: z.string().regex(/^\+?[\d\s\-\(\)]+$/, 'Invalid phone number format'),
-
-  // Password validation
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/\d/, 'Password must contain at least one number'),
-
-  // Date validation
-  dateString: z.string().datetime('Invalid date format'),
-
-  // Positive number validation
-  positiveNumber: z.number().positive('Must be a positive number'),
-
-  // Non-empty string validation
-  nonEmptyString: z.string().min(1, 'Field cannot be empty'),
-
-  // URL validation
-  url: z.string().url('Invalid URL format'),
-
-  // File size validation (in bytes)
-  fileSize: z.number().max(10 * 1024 * 1024, 'File size cannot exceed 10MB'),
-
-  // Image file type validation
-  imageType: z
-    .enum(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
-    .refine((val) => ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(val), {
-      message: 'Only JPEG, PNG, WebP, and GIF images are allowed',
-    }),
-};
+export const commonSchemas = commonValidationSchemas;
 
 /**
- * Create pagination schema with custom limits
+ * Create pagination schema with custom limits - DEPRECATED
+ * @deprecated Use commonValidationPatterns.createPaginationSchema() instead
  */
 export function createPaginationSchema(maxLimit: number = 100) {
-  return z
-    .object({
-      page: z
-        .string()
-        .optional()
-        .transform((val) => (val ? parseInt(val, 10) : 1)),
-      limit: z
-        .string()
-        .optional()
-        .transform((val) => (val ? parseInt(val, 10) : 20)),
-    })
-    .refine((data) => data.page > 0, {
-      message: 'Page must be greater than 0',
-      path: ['page'],
-    })
-    .refine((data) => data.limit > 0 && data.limit <= maxLimit, {
-      message: `Limit must be between 1 and ${maxLimit}`,
-      path: ['limit'],
-    });
+  return commonValidationPatterns.createPaginationSchema(maxLimit);
 }
 
 /**

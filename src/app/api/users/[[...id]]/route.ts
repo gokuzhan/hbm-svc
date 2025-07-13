@@ -3,23 +3,22 @@ import { NotFoundError, ValidationError, withApiHandler } from '@/lib/api/middle
 import { checkRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/api/rate-limit';
 import { createErrorResponse, createSuccessResponse } from '@/lib/api/responses';
 import { validateQueryParams, validateRequestBody } from '@/lib/api/validation';
+import { commonValidationSchemas } from '@/lib/validation';
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 
-// Example schemas for demonstration
+// Example schemas for demonstration - MIGRATED to centralized validation
 const CreateUserSchema = z.object({
-  name: z.string().min(1).max(100),
-  email: z.string().email(),
+  name: commonValidationSchemas.name,
+  email: commonValidationSchemas.email,
   age: z.number().min(0).max(150).optional(),
 });
 
 const GetUserParamsSchema = z.object({
-  id: z.string().uuid(),
+  id: commonValidationSchemas.uuid,
 });
 
-const GetUsersQuerySchema = z.object({
-  page: z.coerce.number().min(1).default(1),
-  limit: z.coerce.number().min(1).max(100).default(10),
+const GetUsersQuerySchema = commonValidationSchemas.pagination.extend({
   search: z.string().optional(),
 });
 

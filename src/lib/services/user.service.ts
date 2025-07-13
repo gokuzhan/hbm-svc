@@ -6,6 +6,7 @@ import { RoleRepository } from '@/lib/repositories/role.repository';
 import { UserRepository } from '@/lib/repositories/user.repository';
 import { User } from '@/types';
 import bcrypt from 'bcryptjs';
+import { commonValidationSchemas, isValidEmail, isValidPhoneNumber } from '../validation';
 import { BaseServiceWithAuth } from './base.service';
 import { PermissionError, ServiceContext, ServiceError, ValidationError } from './types';
 
@@ -384,25 +385,22 @@ export class UserService extends BaseServiceWithAuth<User> {
   }
 
   private validatePassword(password: string): void {
-    if (password.length < 8) {
-      throw new ValidationError('Password must be at least 8 characters long');
-    }
-
-    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+    // Use centralized password validation
+    try {
+      commonValidationSchemas.password.parse(password);
+    } catch {
+      // Convert Zod validation errors to service ValidationError
       throw new ValidationError(
-        'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+        'Password validation failed: Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character'
       );
     }
   }
 
   private isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    return isValidEmail(email);
   }
 
   private isValidPhone(phone: string): boolean {
-    // Basic phone validation - can be enhanced
-    const phoneRegex = /^\+?[\d\s\-\(\)]{10,}$/;
-    return phoneRegex.test(phone);
+    return isValidPhoneNumber(phone);
   }
 }

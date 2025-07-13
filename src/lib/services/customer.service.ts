@@ -4,6 +4,7 @@ import { ACTIONS, RESOURCES } from '@/constants';
 import { QueryOptions } from '@/lib/dal/base';
 import { CustomerRepository } from '@/lib/repositories/customer.repository';
 import { Customer } from '@/types';
+import { isValidEmail, isValidPhoneNumber } from '../validation';
 import { BaseServiceWithAuth } from './base.service';
 import { PermissionResult, ServiceContext, ServiceError, ValidationError } from './types';
 
@@ -338,14 +339,13 @@ export class CustomerService extends BaseServiceWithAuth<Customer> {
     }
   }
 
+  // Using centralized validation from validation module
+  // These methods are kept for backward compatibility but delegate to centralized validation
   private isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    return isValidEmail(email);
   }
 
   private isValidPhone(phone: string): boolean {
-    // Basic phone validation - can be enhanced
-    const phoneRegex = /^\+?[\d\s\-\(\)]{10,}$/;
-    return phoneRegex.test(phone);
+    return isValidPhoneNumber(phone);
   }
 }

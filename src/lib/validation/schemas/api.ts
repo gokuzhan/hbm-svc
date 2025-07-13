@@ -1,50 +1,46 @@
-// API Request/Response Types and Validation Schemas
+// API Validation Schemas
+// HBM Service Layer - Centralized schemas for API endpoints
 
 import { z } from 'zod';
-import { commonValidationSchemas } from '../validation';
+import { commonValidationSchemas } from '../patterns';
 
-// Common validation patterns - MIGRATED TO CENTRALIZED VALIDATION
-export const emailSchema = commonValidationSchemas.email;
-export const phoneSchema = commonValidationSchemas.phone;
-export const nameSchema = commonValidationSchemas.name;
-export const idSchema = commonValidationSchemas.uuid;
-
-// Pagination schemas - MIGRATED TO CENTRALIZED VALIDATION
-export const paginationSchema = commonValidationSchemas.pagination;
-
-// Staff User schemas
+/**
+ * Staff User Schemas - consolidating from /src/lib/api/schemas.ts
+ */
 export const createStaffUserSchema = z.object({
-  email: emailSchema,
-  firstName: nameSchema,
-  lastName: nameSchema,
+  email: commonValidationSchemas.email,
+  firstName: commonValidationSchemas.name,
+  lastName: commonValidationSchemas.name,
   password: commonValidationSchemas.password,
-  phone: phoneSchema,
-  roleId: z.string().optional(),
+  phone: commonValidationSchemas.phone,
+  roleId: commonValidationSchemas.uuid.optional(),
   isActive: z.boolean().default(true),
 });
 
 export const updateStaffUserSchema = z.object({
-  email: emailSchema.optional(),
-  firstName: nameSchema.optional(),
-  lastName: nameSchema.optional(),
-  phone: phoneSchema,
-  roleId: z.string().optional(),
+  email: commonValidationSchemas.emailOptional,
+  firstName: commonValidationSchemas.nameOptional,
+  lastName: commonValidationSchemas.nameOptional,
+  phone: commonValidationSchemas.phone,
+  roleId: commonValidationSchemas.uuid.optional(),
   isActive: z.boolean().optional(),
 });
 
-export const listStaffUsersSchema = paginationSchema.extend({
+export const listStaffUsersSchema = commonValidationSchemas.pagination.extend({
   search: z.string().optional(),
   role: z.string().optional(),
   isActive: z.boolean().optional(),
   sortBy: z.enum(['firstName', 'lastName', 'email', 'createdAt', 'updatedAt']).default('createdAt'),
 });
 
-// Customer schemas
+/**
+ * Customer Schemas
+ */
 export const updateCustomerProfileSchema = z.object({
-  firstName: nameSchema.optional(),
-  lastName: nameSchema.optional(),
-  phone: phoneSchema,
-  companyName: z.string().max(200, 'Company name too long').optional(),
+  firstName: commonValidationSchemas.nameOptional,
+  lastName: commonValidationSchemas.nameOptional,
+  phone: commonValidationSchemas.phone,
+  companyName: commonValidationSchemas.companyName,
   address: z.string().max(500, 'Address too long').optional(),
   city: z.string().max(100, 'City name too long').optional(),
   state: z.string().max(100, 'State name too long').optional(),
@@ -52,89 +48,101 @@ export const updateCustomerProfileSchema = z.object({
   country: z.string().max(100, 'Country name too long').optional(),
 });
 
-export const listCustomerOrdersSchema = paginationSchema.extend({
+export const listCustomerOrdersSchema = commonValidationSchemas.pagination.extend({
   status: z.string().optional(),
-  startDate: z.string().datetime().optional(),
-  endDate: z.string().datetime().optional(),
+  startDate: commonValidationSchemas.dateString.optional(),
+  endDate: commonValidationSchemas.dateString.optional(),
   sortBy: z.enum(['orderNumber', 'createdAt', 'updatedAt', 'status']).default('createdAt'),
 });
 
-export const listCustomerInquiriesSchema = paginationSchema.extend({
-  status: z.enum(['new', 'accepted', 'in_progress', 'closed', 'rejected']).optional(),
-  startDate: z.string().datetime().optional(),
-  endDate: z.string().datetime().optional(),
+export const listCustomerInquiriesSchema = commonValidationSchemas.pagination.extend({
+  status: commonValidationSchemas.inquiryStatus.optional(),
+  startDate: commonValidationSchemas.dateString.optional(),
+  endDate: commonValidationSchemas.dateString.optional(),
   sortBy: z.enum(['createdAt', 'updatedAt', 'status']).default('createdAt'),
 });
 
-// Public inquiry schema
+/**
+ * Public Inquiry Schema
+ */
 export const createPublicInquirySchema = z.object({
-  customerName: nameSchema,
-  email: emailSchema,
-  phone: phoneSchema,
-  companyName: z.string().max(200, 'Company name too long').optional(),
-  orderType: z.enum(['Private Label', 'White Label', 'Fabric']).optional(),
+  customerName: commonValidationSchemas.name,
+  email: commonValidationSchemas.email,
+  phone: commonValidationSchemas.phone,
+  companyName: commonValidationSchemas.companyName,
+  orderType: commonValidationSchemas.orderType.optional(),
   productDescription: z
     .string()
     .min(1, 'Product description is required')
     .max(2000, 'Description too long'),
-  quantityEstimate: z.number().positive('Quantity must be positive').optional(),
+  quantityEstimate: commonValidationSchemas.positiveNumber.optional(),
   timeline: z.string().max(200, 'Timeline too long').optional(),
   additionalNotes: z.string().max(1000, 'Notes too long').optional(),
 });
 
-// Product schemas
-export const listProductsSchema = paginationSchema.extend({
+/**
+ * Product Schemas
+ */
+export const listProductsSchema = commonValidationSchemas.pagination.extend({
   search: z.string().optional(),
-  categoryId: z.string().optional(),
-  orderTypeId: z.string().optional(),
+  categoryId: commonValidationSchemas.uuid.optional(),
+  orderTypeId: commonValidationSchemas.uuid.optional(),
   isActive: z.boolean().optional(),
   isVariable: z.boolean().optional(),
   sortBy: z.enum(['name', 'sku', 'price', 'createdAt', 'updatedAt']).default('createdAt'),
 });
 
-// Order schemas
-export const listOrdersSchema = paginationSchema.extend({
+/**
+ * Order Schemas
+ */
+export const listOrdersSchema = commonValidationSchemas.pagination.extend({
   search: z.string().optional(),
   status: z.string().optional(),
-  customerId: z.string().optional(),
-  orderTypeId: z.string().optional(),
-  startDate: z.string().datetime().optional(),
-  endDate: z.string().datetime().optional(),
+  customerId: commonValidationSchemas.uuid.optional(),
+  orderTypeId: commonValidationSchemas.uuid.optional(),
+  startDate: commonValidationSchemas.dateString.optional(),
+  endDate: commonValidationSchemas.dateString.optional(),
   sortBy: z.enum(['orderNumber', 'createdAt', 'updatedAt', 'status']).default('createdAt'),
 });
 
-// Inquiry schemas
-export const listInquiriesSchema = paginationSchema.extend({
+/**
+ * Inquiry Schemas
+ */
+export const listInquiriesSchema = commonValidationSchemas.pagination.extend({
   search: z.string().optional(),
-  status: z.enum(['new', 'accepted', 'in_progress', 'closed', 'rejected']).optional(),
-  assignedTo: z.string().optional(),
-  customerId: z.string().optional(),
-  startDate: z.string().datetime().optional(),
-  endDate: z.string().datetime().optional(),
+  status: commonValidationSchemas.inquiryStatus.optional(),
+  assignedTo: commonValidationSchemas.uuid.optional(),
+  customerId: commonValidationSchemas.uuid.optional(),
+  startDate: commonValidationSchemas.dateString.optional(),
+  endDate: commonValidationSchemas.dateString.optional(),
   sortBy: z.enum(['createdAt', 'updatedAt', 'status', 'customerName']).default('createdAt'),
 });
 
 export const updateInquirySchema = z.object({
-  customerName: nameSchema.optional(),
-  customerEmail: emailSchema.optional(),
-  customerPhone: phoneSchema,
-  companyName: z.string().max(200, 'Company name too long').optional(),
+  customerName: commonValidationSchemas.nameOptional,
+  customerEmail: commonValidationSchemas.emailOptional,
+  customerPhone: commonValidationSchemas.phone,
+  companyName: commonValidationSchemas.companyName,
   serviceType: z.string().max(100, 'Service type too long').optional(),
   message: z.string().max(2000, 'Message too long').optional(),
-  assignedTo: z.string().optional(),
-  status: z.enum(['new', 'accepted', 'in_progress', 'closed', 'rejected']).optional(),
+  assignedTo: commonValidationSchemas.uuid.optional(),
+  status: commonValidationSchemas.inquiryStatus.optional(),
 });
 
-// Media/File schemas
-export const listMediaSchema = paginationSchema.extend({
+/**
+ * Media/File Schemas
+ */
+export const listMediaSchema = commonValidationSchemas.pagination.extend({
   type: z.enum(['image', 'document', 'video', 'other']).optional(),
-  uploadedBy: z.string().optional(),
-  startDate: z.string().datetime().optional(),
-  endDate: z.string().datetime().optional(),
+  uploadedBy: commonValidationSchemas.uuid.optional(),
+  startDate: commonValidationSchemas.dateString.optional(),
+  endDate: commonValidationSchemas.dateString.optional(),
   sortBy: z.enum(['fileName', 'fileSize', 'createdAt', 'updatedAt']).default('createdAt'),
 });
 
-// Role and Permission schemas
+/**
+ * Role and Permission Schemas
+ */
 export const createRoleSchema = z.object({
   name: z.string().min(1, 'Role name is required').max(50, 'Role name too long'),
   description: z.string().max(200, 'Description too long').optional(),
@@ -147,39 +155,14 @@ export const updateRoleSchema = z.object({
   permissions: z.array(z.string()).optional(),
 });
 
-export const listRolesSchema = paginationSchema.extend({
+export const listRolesSchema = commonValidationSchemas.pagination.extend({
   search: z.string().optional(),
   sortBy: z.enum(['name', 'createdAt', 'updatedAt']).default('name'),
 });
 
-// Response type interfaces
-export interface ApiResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-  timestamp: string;
-}
-
-export interface PaginatedApiResponse<T> extends ApiResponse<T[]> {
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
-}
-
-export interface ErrorResponse extends ApiResponse<never> {
-  success: false;
-  error: string;
-  details?: unknown;
-  code?: string;
-}
-
-// Export type helpers
+/**
+ * Type exports for TypeScript
+ */
 export type CreateStaffUserRequest = z.infer<typeof createStaffUserSchema>;
 export type UpdateStaffUserRequest = z.infer<typeof updateStaffUserSchema>;
 export type ListStaffUsersQuery = z.infer<typeof listStaffUsersSchema>;

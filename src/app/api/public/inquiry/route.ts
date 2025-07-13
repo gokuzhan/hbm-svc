@@ -5,21 +5,12 @@ import { withApiHandler } from '@/lib/api/middleware';
 import { checkRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/api/rate-limit';
 import { createErrorResponse, createSuccessResponse } from '@/lib/api/responses';
 import { InquiryService } from '@/lib/services';
+import { createPublicInquirySchema } from '@/lib/validation/schemas/api';
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 
-// Validation schemas
-const createInquirySchema = z.object({
-  customerName: z.string().min(1, 'Customer name is required'),
-  email: z.string().email('Invalid email format'),
-  phone: z.string().optional(),
-  companyName: z.string().optional(),
-  orderType: z.enum(['Private Label', 'White Label', 'Fabric']).optional(),
-  productDescription: z.string().min(1, 'Product description is required'),
-  quantityEstimate: z.number().positive().optional(),
-  timeline: z.string().optional(),
-  additionalNotes: z.string().optional(),
-});
+// Validation schemas - MIGRATED to centralized validation
+const createInquirySchema = createPublicInquirySchema;
 
 /**
  * POST /api/public/inquiry - Submit a new inquiry (no authentication required)

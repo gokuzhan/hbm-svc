@@ -4,6 +4,7 @@ import { customerAuth, customers, users } from '@/lib/db/schema';
 import { Customer } from '@/types';
 import bcrypt from 'bcryptjs';
 import { and, asc, count, desc, eq, like, or } from 'drizzle-orm';
+import { isValidEmail } from '../validation';
 
 export interface CreateCustomerData {
   firstName: string;
@@ -410,9 +411,8 @@ export class CustomerRepository extends BaseService<Customer> {
       throw new Error('Customer with this email already exists');
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(data.email)) {
+    // Validate email format using centralized validation
+    if (!isValidEmail(data.email)) {
       throw new Error('Invalid email format');
     }
 
@@ -449,9 +449,8 @@ export class CustomerRepository extends BaseService<Customer> {
         throw new Error('Email already in use by another customer');
       }
 
-      // Validate email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(data.email)) {
+      // Validate email format using centralized validation
+      if (!isValidEmail(data.email)) {
         throw new Error('Invalid email format');
       }
     }
