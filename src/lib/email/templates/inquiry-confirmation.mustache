@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{subject}}</title>
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f8f9fa;
+      }
+      .container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px 20px;
+        text-align: center;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .content {
+        padding: 30px 20px;
+      }
+      .inquiry-id {
+        background: #e9ecef;
+        padding: 15px;
+        border-radius: 6px;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 14px;
+        margin: 20px 0;
+        border-left: 4px solid #667eea;
+      }
+      .steps {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 6px;
+        margin: 20px 0;
+      }
+      .steps h3 {
+        margin-top: 0;
+        color: #495057;
+      }
+      .steps ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+      .steps li {
+        margin: 8px 0;
+        color: #6c757d;
+      }
+      .footer {
+        background: #f8f9fa;
+        padding: 20px;
+        text-align: center;
+        border-top: 1px solid #dee2e6;
+        font-size: 12px;
+        color: #6c757d;
+      }
+      .brand {
+        color: #667eea;
+        font-weight: 600;
+      }
+      @media only screen and (max-width: 600px) {
+        body {
+          padding: 10px;
+        }
+        .header {
+          padding: 20px 15px;
+        }
+        .header h1 {
+          font-size: 20px;
+        }
+        .content {
+          padding: 20px 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Thank you for your inquiry!</h1>
+      </div>
+
+      <div class="content">
+        <p>Dear <strong>{{customerName}}</strong>,</p>
+
+        <p>
+          Thank you for submitting your inquiry to <span class="brand">HBM Service</span>. We have
+          received your request and our team will review it promptly.
+        </p>
+
+        <p><strong>Your inquiry reference:</strong></p>
+        <div class="inquiry-id">{{inquiryId}}</div>
+
+        <div class="steps">
+          <h3>What happens next:</h3>
+          <ul>
+            <li>Our team will review your requirements within 24 hours</li>
+            <li>A specialist will contact you to discuss your project details</li>
+            <li>We'll provide you with a customized quotation</li>
+          </ul>
+        </div>
+
+        <p>If you have any immediate questions, please don't hesitate to contact us.</p>
+
+        <p>
+          Best regards,<br />
+          <span class="brand">HBM Service Team</span>
+        </p>
+      </div>
+
+      <div class="footer">
+        <p>This is an automated message. Please do not reply to this email directly.</p>
+        <p>&copy; {{year}} HBM Service. All rights reserved.</p>
+      </div>
+    </div>
+  </body>
+</html>

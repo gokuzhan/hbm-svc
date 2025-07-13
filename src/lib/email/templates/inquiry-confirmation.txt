@@ -1,0 +1,19 @@
+Dear {{customerName}},
+
+Thank you for submitting your inquiry to HBM Service. We have received your request and our team will review it promptly.
+
+Your inquiry reference: {{inquiryId}}
+
+What happens next:
+- Our team will review your requirements within 24 hours
+- A specialist will contact you to discuss your project details  
+- We'll provide you with a customized quotation
+
+If you have any immediate questions, please don't hesitate to contact us.
+
+Best regards,
+HBM Service Team
+
+---
+This is an automated message. Please do not reply to this email directly.
+© {{year}} HBM Service. All rights reserved.

@@ -78,6 +78,9 @@ export const createPublicInquirySchema = z.object({
   quantityEstimate: commonValidationSchemas.positiveNumber.optional(),
   timeline: z.string().max(200, 'Timeline too long').optional(),
   additionalNotes: z.string().max(1000, 'Notes too long').optional(),
+  // Optional CAPTCHA fields for spam protection
+  captchaChallenge: z.string().optional(),
+  captchaResponse: z.string().optional(),
 });
 
 /**

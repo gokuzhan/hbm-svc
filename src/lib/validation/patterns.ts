@@ -127,11 +127,11 @@ export const commonValidationSchemas = {
   // Date strings
   dateString: z.string().datetime('Invalid date format'),
 
-  // Positive numbers
-  positiveNumber: z.number().positive('Must be a positive number'),
+  // Positive numbers (with coercion for form data compatibility)
+  positiveNumber: z.coerce.number().positive('Must be a positive number'),
 
-  // Non-negative numbers
-  nonNegativeNumber: z.number().min(0, 'Must be zero or positive'),
+  // Non-negative numbers (with coercion for form data compatibility)
+  nonNegativeNumber: z.coerce.number().min(0, 'Must be zero or positive'),
 
   // Non-empty strings
   nonEmptyString: z.string().min(1, 'Field cannot be empty'),

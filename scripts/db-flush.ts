@@ -17,11 +17,12 @@
 import { config } from 'dotenv';
 import { resolve } from 'path';
 import postgres from 'postgres';
+import { env } from '../src/lib/env';
 
 // Load environment variables
 config({ path: resolve(process.cwd(), '.env.local') });
 
-const DATABASE_URL = process.env.DATABASE_URL;
+const DATABASE_URL = env.DATABASE_URL;
 
 if (!DATABASE_URL) {
   console.error('❌ DATABASE_URL is not defined in .env.local');

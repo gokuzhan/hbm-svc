@@ -7,6 +7,7 @@
 
 import { ALL_PERMISSIONS, DEFAULT_ROLE_PERMISSIONS } from '@/lib/rbac/permissions';
 import { eq } from 'drizzle-orm';
+import { isProd } from '../env';
 import { testConnection } from './connection';
 import { db } from './index';
 import { permissions, rolePermissions, roles } from './schema';
@@ -164,7 +165,7 @@ async function seedDatabase() {
  * Reset database (development only)
  */
 async function resetDatabase() {
-  if (process.env.NODE_ENV === 'production') {
+  if (isProd) {
     throw new Error('Cannot reset database in production');
   }
 

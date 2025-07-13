@@ -36,6 +36,8 @@ HBM (Huezo Business Management) is a **garment manufacturing order management sy
 npm run db:reset    # Complete reset: flush → push → seed (development)
 npm run db:studio   # Open Drizzle Studio browser
 npm run db:test     # Test connection health
+npm run db:generate # Generate migrations after schema changes
+npm run db:push     # Push schema to database (development only)
 ```
 
 ### 🚀 Development Server
@@ -43,13 +45,16 @@ npm run db:test     # Test connection health
 ```bash
 npm run dev         # Start Next.js dev server
 npm run dev:all     # Start dev server + database studio
+npm run test        # Run Jest test suite
+npm run test:watch  # Run tests in watch mode
 ```
 
 ### ✅ Code Quality
 
 ```bash
 npm run check       # Run type-check + lint + format (before commits)
-npm run test        # Run Jest test suite
+npm run fix         # Auto-fix linting and formatting issues
+npm run test:coverage # Run tests with coverage report
 ```
 
 ## Key Conventions
@@ -62,11 +67,12 @@ export const GET = withApiHandler(handler);
 export const POST = withStaffAuth(withPermissions(['resource:create'])(handler));
 
 async function handler(request: NextRequest) {
-  // 1. Rate limiting
+  // 1. Rate limiting (required for public endpoints)
   const rateLimitResult = checkRateLimit(request, RATE_LIMIT_CONFIGS.general);
-  // 2. Validation
+  // 2. Input validation using centralized schemas
   const validation = await validateRequestBody(request, CreateSchema);
-  // 3. Business logic
+  // 3. Business logic via service layer
+  const result = await someService.operation(serviceContext, validatedData);
   // 4. Standard responses
   return createSuccessResponse(data, message, statusCode);
 }
@@ -77,19 +83,20 @@ async function handler(request: NextRequest) {
 ```typescript
 async createEntity(context: ServiceContext, data: CreateData): Promise<Entity> {
   await this.requirePermission(context, ACTIONS.CREATE);
-  // Business rule validation
+  // Business rule validation BEFORE database operations
   const validation = validateEntityBusinessRules(data, context);
   if (!validation.isValid) throw new BusinessRuleValidationError(validation.errors);
-  // Repository operation
+  // Repository operation with error handling
   return this.repository.create(data);
 }
 ```
 
-### Error Handling Strategy
+### Unified Error Handling
 
-- **API Layer**: Use `createErrorResponse()` for client errors, let middleware handle exceptions
-- **Service Layer**: Throw typed errors (`ValidationError`, `PermissionError`, `BusinessRuleValidationError`)
-- **Security**: Use `AuthenticationError`, `PermissionError` for access control violations
+- **All Layers**: Use standardized error classes from `src/lib/errors/index.ts`
+- **Service Layer**: Throw `ValidationError`, `PermissionError`, `BusinessRuleValidationError`
+- **API Layer**: Use `createErrorResponse()` - middleware converts exceptions automatically
+- **Error Responses**: Always include `requestId` for debugging in production
 
 ## Critical Files & Patterns
 
@@ -103,7 +110,8 @@ async createEntity(context: ServiceContext, data: CreateData): Promise<Entity> {
 
 - `src/lib/api/middleware.ts` - Core API middleware (`withApiHandler`, `withStaffAuth`)
 - `src/lib/rbac/middleware.ts` - RBAC enforcement for API routes
-- `src/lib/errors/index.ts` - Comprehensive error type system
+- `src/lib/errors/index.ts` - Unified error system with `ERROR_CODES` constants
+- `src/lib/validation/` - Centralized Zod schemas with `commonValidationSchemas`
 - `src/lib/db/schema/` - Drizzle ORM schemas with business constraints
 
 ### Testing Philosophy
@@ -112,6 +120,7 @@ async createEntity(context: ServiceContext, data: CreateData): Promise<Entity> {
 - Business rules tests verify order type constraints
 - RBAC tests ensure permission enforcement
 - Repository tests validate data access patterns
+- Use `npm run test:watch` for TDD workflow
 
 ## Integration Points
 

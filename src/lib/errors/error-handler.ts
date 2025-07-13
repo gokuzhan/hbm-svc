@@ -4,6 +4,7 @@
 import { logger } from '@/lib/api/logger';
 import { NextRequest, NextResponse } from 'next/server';
 import { ZodError } from 'zod';
+import { isProd } from '../env';
 import { handleAuthError, handlePermissionError, handleSecurityViolation } from './auth-errors';
 import {
   AppError,
@@ -36,7 +37,7 @@ interface ErrorHandlerConfig {
 }
 
 const getErrorConfig = (): ErrorHandlerConfig => {
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = isProd;
   return {
     includeStack: !isProduction,
     includeDetails: !isProduction,

@@ -10,6 +10,7 @@ import {
   roles,
   users,
 } from '@/lib/db/schema';
+import { env, isDev } from '@/lib/env';
 import bcrypt from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 import { NextAuthOptions } from 'next-auth';
@@ -46,6 +47,7 @@ async function getUserPermissions(roleId: string) {
 }
 
 export const authOptions: NextAuthOptions = {
+  secret: env.NEXTAUTH_SECRET,
   session: {
     strategy: 'jwt',
     maxAge: 24 * 60 * 60, // 24 hours
@@ -228,5 +230,5 @@ export const authOptions: NextAuthOptions = {
     },
   },
 
-  debug: process.env.NODE_ENV === 'development',
+  debug: isDev,
 };

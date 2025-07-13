@@ -1,0 +1,15 @@
+🔔 NEW INQUIRY RECEIVED
+
+Inquiry ID: {{inquiryId}}
+Customer Name: {{customerName}}
+Email: {{customerEmail}}
+{{#customerPhone}}Phone: {{customerPhone}}{{/customerPhone}}
+{{#companyName}}Company: {{companyName}}{{/companyName}}
+{{#orderType}}Order Type: {{orderType}}{{/orderType}}
+{{#submittedAt}}Submitted: {{submittedAt}}{{/submittedAt}}
+
+⚡ ACTION REQUIRED: Please review this inquiry in the admin panel and assign it to the appropriate team member.
+
+---
+HBM Service Internal Notification System
+© {{year}} HBM Service. All rights reserved.

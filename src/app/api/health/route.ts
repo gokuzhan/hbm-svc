@@ -2,6 +2,7 @@ import { logger } from '@/lib/api/logger';
 import { withApiHandler } from '@/lib/api/middleware';
 import { checkRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/api/rate-limit';
 import { createErrorResponse, createSuccessResponse } from '@/lib/api/responses';
+import { env } from '@/lib/env';
 import { NextRequest } from 'next/server';
 
 async function handler(request: NextRequest) {
@@ -21,8 +22,8 @@ async function handler(request: NextRequest) {
       status: 'healthy',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
-      version: process.env.npm_package_version || '1.0.0',
-      environment: process.env.NODE_ENV || 'development',
+      version: env.npm_package_version,
+      environment: env.NODE_ENV,
       nodeVersion: process.version,
       memory: {
         used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
