@@ -13,6 +13,7 @@ export const RESOURCES = {
   ORDERS: 'orders',
   INQUIRIES: 'inquiries',
   MEDIA: 'media',
+  ROLES: 'roles',
 } as const;
 
 export const ACTIONS = {
@@ -111,6 +112,14 @@ export const PERMISSION_GROUPS = {
     createPermission(RESOURCES.MEDIA, ACTIONS.UPDATE),
     createPermission(RESOURCES.MEDIA, ACTIONS.DELETE),
   ],
+
+  // Role management permissions
+  ROLE_MANAGEMENT: [
+    createPermission(RESOURCES.ROLES, ACTIONS.CREATE),
+    createPermission(RESOURCES.ROLES, ACTIONS.READ),
+    createPermission(RESOURCES.ROLES, ACTIONS.UPDATE),
+    createPermission(RESOURCES.ROLES, ACTIONS.DELETE),
+  ],
 } as const;
 
 /**
@@ -120,7 +129,7 @@ export const DEFAULT_ROLE_PERMISSIONS = {
   // Superadmin: All permissions
   superadmin: ALL_PERMISSIONS,
 
-  // Admin: All permissions except user management
+  // Admin: All permissions except user management and role management
   admin: [
     ...PERMISSION_GROUPS.CUSTOMER_MANAGEMENT,
     ...PERMISSION_GROUPS.PRODUCT_MANAGEMENT,

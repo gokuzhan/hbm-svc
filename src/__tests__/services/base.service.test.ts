@@ -26,17 +26,16 @@ class MockRepository extends RepositoryBaseService<any> {
     super('test-table');
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected async validateCreate(_data: any): Promise<void> {
     // Mock implementation
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected async validateUpdate(_id: string, _data: any): Promise<void> {
     // Mock implementation
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected async validateDelete(_id: string): Promise<void> {
     // Mock implementation
   }
@@ -49,27 +48,25 @@ class TestService extends BaseServiceWithAuth<any> {
     super(repository, 'test-resource');
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected async validateCreate(_context: ServiceContext, _data: any): Promise<void> {
     // Test implementation
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected async validateUpdate(_context: ServiceContext, _id: string, _data: any): Promise<void> {
     // Test implementation
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected async validateDelete(_context: ServiceContext, _id: string): Promise<void> {
     // Test implementation
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected async checkCustomerAccess(_context: ServiceContext, _entity: any): Promise<boolean> {
     return true;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected checkCustomerPermission(_context: ServiceContext, _action: string) {
     return { allowed: true };
   }

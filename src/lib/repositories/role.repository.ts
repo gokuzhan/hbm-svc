@@ -203,7 +203,7 @@ export class RoleRepository extends BaseService<Role> {
   }
 
   // Implementation of BaseService abstract methods
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   async create(_data: Omit<Role, 'id' | 'createdAt' | 'updatedAt'>): Promise<Role> {
     // This is a placeholder to satisfy BaseService interface
     // Use createRole for actual role creation

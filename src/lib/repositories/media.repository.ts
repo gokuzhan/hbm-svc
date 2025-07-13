@@ -161,7 +161,7 @@ export class MediaRepository extends BaseService<Media> {
   }
 
   // Implementation of BaseService abstract methods
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   async create(_data: Omit<Media, 'id' | 'createdAt' | 'updatedAt'>): Promise<Media> {
     // This is a placeholder to satisfy BaseService interface
     // Use createMedia for actual media creation

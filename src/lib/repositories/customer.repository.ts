@@ -226,7 +226,7 @@ export class CustomerRepository extends BaseService<Customer> {
   }
 
   // Implementation of BaseService abstract methods
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   async create(_data: Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>): Promise<Customer> {
     // This is a placeholder to satisfy BaseService interface
     // Use createCustomer for actual customer creation

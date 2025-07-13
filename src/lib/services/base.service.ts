@@ -54,7 +54,7 @@ export abstract class BaseServiceWithAuth<T> {
   /**
    * Check customer-specific permissions
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   protected checkCustomerPermission(_context: ServiceContext, _action: string): PermissionResult {
     // By default, customers can't access most resources
     // Override this method in specific services for customer access

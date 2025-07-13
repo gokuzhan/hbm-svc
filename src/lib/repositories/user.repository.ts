@@ -281,7 +281,7 @@ export class UserRepository extends BaseService<User> {
   }
 
   // Implementation of BaseService abstract methods
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   async create(_data: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {
     // This is a placeholder to satisfy BaseService interface
     // Use createUser for actual user creation with password

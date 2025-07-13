@@ -565,7 +565,6 @@ export class NotificationRepository extends BaseService<Notification> {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected async validateUpdate(id: string, _data: UpdateNotificationData): Promise<void> {
     // Check if notification exists
     const existingNotification = await this.findById(id);
